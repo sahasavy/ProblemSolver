@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="pvt.code.practice.ProblemSolverApplicationTests" tests="1" skipped="0" failures="0" errors="0" timestamp="2024-04-13T10:34:44" hostname="Souravs-Laptop.local" time="0.37">
+<testsuite name="pvt.code.practice.ProblemSolverApplicationTests" tests="1" skipped="0" failures="0" errors="0" timestamp="2024-06-21T16:35:21" hostname="Souravs-Laptop.local" time="0.388">
   <properties/>
-  <testcase name="contextLoads()" classname="pvt.code.practice.ProblemSolverApplicationTests" time="0.37"/>
-  <system-out><![CDATA[16:04:44.204 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [pvt.code.practice.ProblemSolverApplicationTests]: ProblemSolverApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-16:04:44.237 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration pvt.code.practice.ProblemSolverApplication for test class pvt.code.practice.ProblemSolverApplicationTests
+  <testcase name="contextLoads()" classname="pvt.code.practice.ProblemSolverApplicationTests" time="0.388"/>
+  <system-out><![CDATA[22:05:21.360 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [pvt.code.practice.ProblemSolverApplicationTests]: ProblemSolverApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+22:05:21.393 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration pvt.code.practice.ProblemSolverApplication for test class pvt.code.practice.ProblemSolverApplicationTests
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -13,9 +13,9 @@
  =========|_|==============|___/=/_/_/_/
  :: Spring Boot ::                (v3.2.4)
 
-2024-04-13T16:04:44.362+05:30  INFO 13625 --- [ProblemSolver] [    Test worker] p.c.p.ProblemSolverApplicationTests      : Starting ProblemSolverApplicationTests using Java 17.0.10 with PID 13625 (started by sahasavy in /Users/sahasavy/Sourav/Projects/IntelliJ/ProblemSolver)
-2024-04-13T16:04:44.363+05:30  INFO 13625 --- [ProblemSolver] [    Test worker] p.c.p.ProblemSolverApplicationTests      : No active profile set, falling back to 1 default profile: "default"
-2024-04-13T16:04:44.530+05:30  INFO 13625 --- [ProblemSolver] [    Test worker] p.c.p.ProblemSolverApplicationTests      : Started ProblemSolverApplicationTests in 0.246 seconds (process running for 0.637)
+2024-06-21T22:05:21.524+05:30  INFO 31865 --- [ProblemSolver] [    Test worker] p.c.p.ProblemSolverApplicationTests      : Starting ProblemSolverApplicationTests using Java 17.0.10 with PID 31865 (started by sahasavy in /Users/sahasavy/Sourav/Projects/IntelliJ/ProblemSolver)
+2024-06-21T22:05:21.524+05:30  INFO 31865 --- [ProblemSolver] [    Test worker] p.c.p.ProblemSolverApplicationTests      : No active profile set, falling back to 1 default profile: "default"
+2024-06-21T22:05:21.686+05:30  INFO 31865 --- [ProblemSolver] [    Test worker] p.c.p.ProblemSolverApplicationTests      : Started ProblemSolverApplicationTests in 0.243 seconds (process running for 0.716)
 ]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>
