@@ -1,0 +1,1202 @@
+Index: src/main/java/pvt/code/practice/hard/ConstantTimeDataStr.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/pvt/code/practice/hard/ConstantTimeDataStr.java b/src/main/java/pvt/code/practice/hard/ConstantTimeDataStr.java
+new file mode 100644
+--- /dev/null	
++++ b/src/main/java/pvt/code/practice/hard/ConstantTimeDataStr.java	
+@@ -0,0 +1,78 @@
++package pvt.code.practice.hard;
++
++import java.util.*;
++
++/*
++    Design a data structure that supports the following operations in constant time.
++    1. insert an item
++    2. remove an item
++    3. search an item
++    4. return a random element from the set of elements in the data structure
++ */
++public class ConstantTimeDataStr<T> {
++
++    private final Map<T, Integer> elementIndexMap;
++    private final List<T> elementList;
++    private final Random random;
++
++    public ConstantTimeDataStr() {
++        elementIndexMap = new HashMap<>();
++        elementList = new ArrayList<>();
++        random = new Random();
++    }
++
++    public boolean insert(T element) {
++        if (elementIndexMap.containsKey(element)) {
++            return false; // Element already exists
++        }
++        elementList.add(element);
++        elementIndexMap.put(element, elementList.size() - 1); // Map<actualElement, currentIndex>
++        return true;
++    }
++
++    public boolean remove(T element) {
++        if (!elementIndexMap.containsKey(element)) {
++            return false; // Element doesn't exist
++        }
++
++        int index = elementIndexMap.get(element);
++        T lastElement = elementList.get(elementList.size() - 1);
++
++        elementList.set(index, lastElement);
++        elementIndexMap.put(lastElement, index);
++
++        elementList.remove(elementList.size() - 1);
++        elementIndexMap.remove(element);
++
++        return true;
++    }
++
++    public boolean search(T element) {
++        return elementIndexMap.containsKey(element);
++    }
++
++    public T getRandomElement() {
++        if (elementList.isEmpty()) {
++            return null; // No element to return
++        }
++        int randomIndex = random.nextInt(elementList.size());
++        return elementList.get(randomIndex);
++    }
++
++    public static void main(String[] args) {
++        ConstantTimeDataStr<Integer> ds = new ConstantTimeDataStr<>();
++
++        System.out.println("Result: " + ds.insert(1001)); // true
++        System.out.println("Result: " + ds.insert(2002)); // true
++        System.out.println("Result: " + ds.insert(3003)); // true
++        System.out.println("Result: " + ds.insert(3003)); // false
++
++        System.out.println("Result: " + ds.search(2002)); // true
++        System.out.println("Result: " + ds.getRandomElement()); // Random element from {1001, 2002, 3003}
++
++        System.out.println("Result: " + ds.remove(2002)); //true
++        System.out.println("Result: " + ds.search(2002)); // false
++
++        System.out.println("Result: " + ds.getRandomElement()); // Random element from {1001, 3003}
++    }
++}
+Index: src/main/java/pvt/code/practice/medium/PatternMatcher.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/pvt/code/practice/medium/PatternMatcher.java b/src/main/java/pvt/code/practice/medium/PatternMatcher.java
+new file mode 100644
+--- /dev/null	
++++ b/src/main/java/pvt/code/practice/medium/PatternMatcher.java	
+@@ -0,0 +1,70 @@
++package pvt.code.practice.medium;
++
++import java.util.HashMap;
++import java.util.Map;
++
++/*
++pattern --> "a b b a"
++String --> "tea coffee coffee tea" --> return true
++String --> "tea coffee coffee tea tea coffee coffee tea" --> return true
++String --> "tea1 coffee coffee tea" --> return false
++String --> "tea tea1 coffee tea coffee" --> return false
++ */
++public class PatternMatcher {
++
++    public static void main(String[] args) {
++        // Test cases
++        System.out.println(matchesPattern("a b b a", "tea coffee coffee tea")); // true
++        System.out.println(matchesPattern("a b b a", "tea coffee coffee tea tea coffee coffee tea")); // true
++        System.out.println(matchesPattern("a b b a", "tea coffee coffee tea tea coffee coffee tea text")); // false
++        System.out.println(matchesPattern("a b b a", "tea1 coffee coffee tea tea coffee coffee tea")); // false
++        System.out.println(matchesPattern("a b b a", "tea coffee coffee tea tea1 coffee coffee tea")); // false
++        System.out.println(matchesPattern("a b b a", "tea1 coffee coffee tea")); // false
++        System.out.println(matchesPattern("a b b a", "tea tata coffee tea coffee")); // false
++        System.out.println(matchesPattern("a a b c", "table table top toy")); // true
++        System.out.println(matchesPattern("a a b c", "table hi table top toy")); // false
++    }
++
++    public static boolean matchesPattern(String pattern, String actualStr) {
++        String[] patternTokens = pattern.split(" ");
++        String[] actualTokens = actualStr.split(" ");
++
++        // Check if the length of actual tokens is a multiple of the length of pattern tokens
++        if (actualTokens.length % patternTokens.length != 0) {
++            return false;
++        }
++
++        int numChunks = actualTokens.length / patternTokens.length;
++
++        // Iterate through each chunk
++        for (int chunk = 0; chunk < numChunks; chunk++) {
++            Map<String, String> patternToWordMap = new HashMap<>();
++            Map<String, String> wordToPatternMap = new HashMap<>();
++
++            for (int i = 0; i < patternTokens.length; i++) {
++                String patternToken = patternTokens[i];
++                String actualToken = actualTokens[chunk * patternTokens.length + i];
++
++                // Check if the current pattern token has been mapped to a different word
++                if (patternToWordMap.containsKey(patternToken)) {
++                    if (!patternToWordMap.get(patternToken).equals(actualToken)) {
++                        return false;
++                    }
++                } else {
++                    patternToWordMap.put(patternToken, actualToken);
++                }
++
++                // Check if the current actual token has been mapped to a different pattern token
++                if (wordToPatternMap.containsKey(actualToken)) {
++                    if (!wordToPatternMap.get(actualToken).equals(patternToken)) {
++                        return false;
++                    }
++                } else {
++                    wordToPatternMap.put(actualToken, patternToken);
++                }
++            }
++        }
++
++        return true;
++    }
++}
+Index: src/main/java/pvt/code/practice/medium/PythonRangeFunction.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/pvt/code/practice/medium/PythonRangeFunction.java b/src/main/java/pvt/code/practice/medium/PythonRangeFunction.java
+new file mode 100644
+--- /dev/null	
++++ b/src/main/java/pvt/code/practice/medium/PythonRangeFunction.java	
+@@ -0,0 +1,53 @@
++package pvt.code.practice.medium;
++
++import java.util.ArrayList;
++
++/*
++// range(start, stop, step)
++ */
++public class PythonRangeFunction {
++    public static void main(String[] args) {
++        ArrayList<Integer> numList1 = range(5);
++        System.out.println(numList1);
++
++        ArrayList<Integer> numList2 = range(3, 5);
++        System.out.println(numList2);
++
++        ArrayList<Integer> numList22 = range(5, 3);
++        System.out.println(numList22);
++
++        ArrayList<Integer> numList3 = range(3, 20, 2);
++        System.out.println(numList3);
++
++        ArrayList<Integer> numList4 = range(20, 3, -2);
++        System.out.println(numList4);
++    }
++
++    private static ArrayList<Integer> range(int stop) {
++        return range(0, stop, 1);
++    }
++
++    private static ArrayList<Integer> range(int start, int stop) {
++        if(stop < start) {
++            return new ArrayList<>();
++        }
++        return range(start, stop, 1);
++    }
++
++    private static ArrayList<Integer> range(int start, int stop, int step) {
++        ArrayList<Integer> numlist = new ArrayList<>();
++
++        if ((start < stop) && step > 0) {
++            for (int i = start; i < stop; i = i + step) {
++                numlist.add(i);
++            }
++        } else if ((stop < start) && step < 0) {
++            for (int i = start; i > stop; i = i + step) {
++                numlist.add(i);
++            }
++        } else {
++            return new ArrayList<>();
++        }
++        return numlist;
++    }
++}
+Index: src/main/java/pvt/code/practice/medium/LargestTemperatureDrop.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/pvt/code/practice/medium/LargestTemperatureDrop.java b/src/main/java/pvt/code/practice/medium/LargestTemperatureDrop.java
+new file mode 100644
+--- /dev/null	
++++ b/src/main/java/pvt/code/practice/medium/LargestTemperatureDrop.java	
+@@ -0,0 +1,35 @@
++package pvt.code.practice.medium;
++
++/*
++Given an array of temperature for each day of the week consecutively.
++Find the largest drop of temperature between any 2 days.
++| Mon | Tues | Wed | Thurs | Fri | Sat | Sun |
++|-----+------+-----+-------+-----+-----+-----|
++| 76  | 72   | 80  | 78    | 68  | 72  | 82  |
++
++OUTPUT:
++80-68==>
++12
++ */
++public class LargestTemperatureDrop {
++    public static void main(String[] args) {
++        int[] temperatures = {76, 72, 80, 78, 68, 72, 82};
++        int largestDrop = findLargestTemperatureDrop(temperatures);
++        System.out.println("Largest temperature drop: " + largestDrop);
++    }
++
++    public static int findLargestTemperatureDrop(int[] temperatures) {
++        int largestDrop = 0;
++
++        for (int i = 0; i < temperatures.length - 1; i++) {
++            for (int j = i + 1; j < temperatures.length; j++) {
++                int drop = temperatures[i] - temperatures[j];
++                if (drop > largestDrop) {
++                    largestDrop = drop;
++                }
++            }
++        }
++
++        return largestDrop;
++    }
++}
+Index: src/main/java/pvt/code/practice/custom/Custom.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/pvt/code/practice/custom/Custom.java b/src/main/java/pvt/code/practice/custom/Custom.java
+new file mode 100644
+--- /dev/null	
++++ b/src/main/java/pvt/code/practice/custom/Custom.java	
+@@ -0,0 +1,10 @@
++package pvt.code.practice.custom;
++
++/*
++
++ */
++public class Custom {
++    public static void main(String[] args) {
++
++    }
++}
+Index: src/main/java/pvt/code/practice/medium/BoatsToSavePeople.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/pvt/code/practice/medium/BoatsToSavePeople.java b/src/main/java/pvt/code/practice/medium/BoatsToSavePeople.java
+new file mode 100644
+--- /dev/null	
++++ b/src/main/java/pvt/code/practice/medium/BoatsToSavePeople.java	
+@@ -0,0 +1,63 @@
++package pvt.code.practice.medium;
++
++import java.util.Arrays;
++
++/*
++Boats to Save People:
++You are given an array people where people[i] is the weight of the ith person, and an infinite number of boats
++where each boat can carry a maximum weight of limit. Each boat carries at most two people at the same time, provided
++the sum of the weight of those people is at most limit.
++Return the minimum number of boats to carry every given person.
++
++Example 1:
++Input: people = [1,2], limit = 3
++Output: 1
++Explanation: 1 boat (1, 2)
++
++Example 2:
++Input: people = [3,2,2,1], limit = 3
++Output: 3
++Explanation: 3 boats (1, 2), (2) and (3)
++
++Example 3:
++Input: people = [3,5,3,4], limit = 5
++Output: 4
++Explanation: 4 boats (3), (3), (4), (5)
++
++Constraints:
++1 <= people.length <= 5 * 104
++1 <= people[i] <= limit <= 3 * 104
++ */
++public class BoatsToSavePeople {
++    public static void main(String[] args) {
++        int[] people1 = {1, 2};
++        int limit1 = 3;
++        System.out.println("Example 1 Output: " + numRescueBoats(people1, limit1)); // Output: 1
++
++        int[] people2 = {3, 2, 2, 1};
++        int limit2 = 3;
++        System.out.println("Example 2 Output: " + numRescueBoats(people2, limit2)); // Output: 3
++
++        int[] people3 = {3, 5, 3, 4};
++        int limit3 = 5;
++        System.out.println("Example 3 Output: " + numRescueBoats(people3, limit3)); // Output: 4
++    }
++
++    public static int numRescueBoats(int[] people, int limit) {
++        Arrays.sort(people);
++
++        int left = 0; // Pointer for the lightest person
++        int right = people.length - 1; // Pointer for the heaviest person
++        int boats = 0;
++
++        while (left <= right) {
++            if (people[left] + people[right] <= limit) {
++                left++; // If the lightest person and the heaviest person can fit in one boat, move the left pointer
++            }
++            right--; // Move the right pointer regardless because the heaviest person is boarded
++            boats++; // Increment the number of boats for every iteration
++        }
++
++        return boats;
++    }
++}
+Index: src/main/java/pvt/code/practice/hard/MeetingScheduler.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/pvt/code/practice/hard/MeetingScheduler.java b/src/main/java/pvt/code/practice/hard/MeetingScheduler.java
+new file mode 100644
+--- /dev/null	
++++ b/src/main/java/pvt/code/practice/hard/MeetingScheduler.java	
+@@ -0,0 +1,150 @@
++package pvt.code.practice.hard;
++
++import java.util.ArrayList;
++import java.util.HashMap;
++import java.util.List;
++import java.util.Map;
++
++/**
++ * James is a businessman. He is on a tight schedule this week. The week starts on Monday at 00:00 and ends on Sunday at 24:00. His schedule consists of M meetings he needs to take part in. Each of them will take place in a period of time, beginning and ending on the same day (there are no two ongoing meetings at the same time). James is very tired, thus he needs to find the longest possible time slot to sleep. In other words, he wants to find the longest period of time when there are no ongoing meetings. The sleeping break can begin and end on different days and should begin and end in the same week.
++ * <p>
++ * You are given a string containing M lines. Each line is a substring representing one meeting in the schedule, in the format "Ddd hh:mm-hh:mm". "Ddd" is a three-letter abbreviation for the day of the week when the meeting takes place: "Mon" (Monday), "Tue", "Wed", "Thu", "Fri", "Sat", "Sun".  "hh:mm-hh:mm" means the beginning time and the ending time of the meeting (from 00:00 to 24:00 inclusive).
++ * <p>
++ * The given times represent exact moments of time. So, there are exactly five minutes between 13:40 and 13:45.
++ * <p>
++ * For example, given a string:
++ * "Sun 10:00-20:00
++ * Fri 05:00-10:00
++ * Fri 16:30-23:50
++ * Sat 10:00-24:00
++ * Sun 01:00-04:00
++ * Sat 02:00-06:00
++ * Tue 03:30-18:15
++ * Tue 19:00-20:00
++ * Wed 04:25-15:14
++ * Wed 15:14-22:40
++ * Thu 00:00-23:59
++ * Mon 05:00-13:00
++ * Mon 15:00-21:00"
++ * The longest time slot when James can sleep is 505 minutes, since James can sleep from Tuesday 20:00 to Wednesday 04:25, which gives 8 hours and 25 minutes = 505 minutes.
++ * <p>
++ * Also, for a string:
++ * "Mon 01:00-23:00
++ * Tue 01:00-23:00
++ * Wed 01:00-23:00
++ * Thu 01:00-23:00
++ * Fri 01:00-23:00
++ * Sat 01:00-23:00
++ * Sun 01:00-21:00"
++ * James should sleep on Sunday from 21:00 to 24:00 (180 minutes).
++ * <p>
++ * Write a function:
++ * <br>
++ * class Solution {
++ * <br>
++ * public int solution(String S) {
++ * <br>
++ * // your code
++ * <br>
++ * }
++ * <br>
++ * }
++ * <br>
++ * that, given a string S representing the schedule, returns the length of the longest time slot when James can sleep (in minutes).
++ * <p>
++ * Assume that:
++ * <br>
++ * - M is an integer within the range [1..100];
++ * <br>
++ * - Each line of the input string is in the format "Ddd hh:mm-hh:mm" and lines are separated with newline characters;
++ * <br>
++ * - There cannot be two ongoing meetings at any time;
++ * <br>
++ * - Each meeting lasts at least 1 minute.
++ * <br>
++ * In your solution, focus on correctness. The performance of your solution will not be the focus of the assessment.
++ * <p>
++ * <p>
++ * Example 1:
++ * <br>
++ * Input String S:
++ * "Sun 10:00-20:00\nFri 05:00-10:00\nFri 16:30-23:50\nSat 10:00-24:00\nSun 01:00-04:00\nSat 02:00-06:00\nTue 03:30-18:15\nTue 19:00-20:00\nWed 04:25-15:14\nWed 15:14-22:40\nThu 00:00-23:59\nMon 05:00-13:00\nMon 15:00-21:00\n"
++ * <br>
++ * Output Expected:
++ * 505
++ * <p>
++ * <p>
++ * Example 2:
++ * <br>
++ * Input String S:
++ * "Mon 01:00-23:00\nTue 01:00-23:00\nWed 01:00-23:00\nThu 01:00-23:00\nFri 01:00-23:00\nSat 01:00-23:00\nSun 01:00-21:00\n"
++ * <br>
++ * Output Expected:
++ * 180
++ * <p>
++ * NOTE:
++ * Please consider the Assumptions very carefully.
++ */
++public class MeetingScheduler {
++
++    public static void main(String[] args) {
++        MeetingScheduler meetingScheduler = new MeetingScheduler();
++        String str1 = "Sun 10:00-20:00\nFri 05:00-10:00\nFri 16:30-23:50\nSat 10:00-24:00\nSun 01:00-04:00\nSat 02:00-06:00\nTue 03:30-18:15\nTue 19:00-20:00\nWed 04:25-15:14\nWed 15:14-22:40\nThu 00:00-23:59\nMon 05:00-13:00\nMon 15:00-21:00\n";
++        System.out.println("Minutes : " + meetingScheduler.solution(str1));
++
++        String str2 = "Mon 01:00-23:00\nTue 01:00-23:00\nWed 01:00-23:00\nThu 01:00-23:00\nFri 01:00-23:00\nSat 01:00-23:00\nSun 01:00-21:00\n";
++        System.out.println("Minutes : " + meetingScheduler.solution(str2));
++    }
++
++    private int solution(String S) {
++        // Step 1: Parse the input string to extract meeting start and end times
++        Map<String, List<int[]>> schedule = new HashMap<>();
++        for (String line : S.split("\n")) {
++            String[] parts = line.split(" ");
++            String day = parts[0];
++            String[] times = parts[1].split("-");
++            int[] startTime = parseTime(times[0]);
++            int[] endTime = parseTime(times[1]);
++
++            schedule.computeIfAbsent(day, k -> new ArrayList<>())
++                    .add(new int[]{startTime[0] * 60 + startTime[1], endTime[0] * 60 + endTime[1]});
++        }
++
++        // Step 2: Create availability data structure
++        boolean[] availability = new boolean[7 * 24 * 60]; // 7 days in a week, each day has 24 hours, each hour has 60 minutes
++
++        // Step 3: Mark minutes with meetings as unavailable
++        for (List<int[]> meetings : schedule.values()) {
++            for (int[] meeting : meetings) {
++                int start = meeting[0];
++                int end = meeting[1];
++                for (int i = start; i < end; i++) {
++                    availability[i] = true;
++                }
++            }
++        }
++
++        // Step 4: Find the longest continuous period of available time
++        int longestSleep = 0;
++        int currentSleep = 0;
++        for (boolean available : availability) {
++            if (available) {
++                currentSleep = 0; // Reset sleep counter
++            } else {
++                currentSleep++; // Increment sleep counter
++                longestSleep = Math.max(longestSleep, currentSleep); // Update longest sleep
++            }
++        }
++
++        // Step 5: Convert the longest continuous period of available time into minutes
++        return longestSleep;
++    }
++
++    // Helper function to parse time into hours and minutes
++    private int[] parseTime(String time) {
++        String[] parts = time.split(":");
++        int hours = Integer.parseInt(parts[0]);
++        int minutes = Integer.parseInt(parts[1]);
++        return new int[]{hours, minutes};
++    }
++}
+Index: src/main/java/pvt/code/practice/medium/ContainerWithMostWater.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/pvt/code/practice/medium/ContainerWithMostWater.java b/src/main/java/pvt/code/practice/medium/ContainerWithMostWater.java
+new file mode 100644
+--- /dev/null	
++++ b/src/main/java/pvt/code/practice/medium/ContainerWithMostWater.java	
+@@ -0,0 +1,48 @@
++package pvt.code.practice.medium;
++
++/*
++Container With Most Water:
++You are given an integer array height of length n. There are n vertical lines drawn such that the two endpoints of
++the ith line are (i, 0) and (i, height[i]).
++Find two lines that together with the x-axis form a container, such that the container contains the most water.
++Return the maximum amount of water a container can store.
++Notice that you may not slant the container.
++
++Example 1:
++Input: height = [1,8,6,2,5,4,8,3,7]
++Output: 49
++Explanation: The above vertical lines are represented by array [1,8,6,2,5,4,8,3,7]. In this case, the max area of
++water (blue section) the container can contain is 49.
++
++Example 2:
++Input: height = [1,1]
++Output: 1
++ */
++public class ContainerWithMostWater {
++    public static void main(String[] args) {
++        int[] height1 = {1, 8, 6, 2, 5, 4, 8, 3, 7};
++        System.out.println("Example 1 Output: " + maxArea(height1)); // Output: 49
++
++        int[] height2 = {1, 1};
++        System.out.println("Example 2 Output: " + maxArea(height2)); // Output: 1
++    }
++
++    public static int maxArea(int[] height) {
++        int maxArea = 0;
++        int left = 0;
++        int right = height.length - 1;
++
++        while (left < right) {
++            int currentArea = Math.min(height[left], height[right]) * (right - left);
++            maxArea = Math.max(maxArea, currentArea);
++
++            if (height[left] < height[right]) {
++                left++;
++            } else {
++                right--;
++            }
++        }
++
++        return maxArea;
++    }
++}
+Index: src/main/java/pvt/code/practice/medium/ZigzagConversion.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/pvt/code/practice/medium/ZigzagConversion.java b/src/main/java/pvt/code/practice/medium/ZigzagConversion.java
+new file mode 100644
+--- /dev/null	
++++ b/src/main/java/pvt/code/practice/medium/ZigzagConversion.java	
+@@ -0,0 +1,107 @@
++package pvt.code.practice.medium;
++
++/*
++The string "PAYPALISHIRING" is written in a zigzag pattern on a given number of rows like this: (you may want to
++display this pattern in a fixed font for better legibility)
++
++P   A   H   N
++A P L S I I G
++Y   I   R
++And then read line by line: "PAHNAPLSIIGYIR"
++
++Example 1:
++Input: s = "PAYPALISHIRING", numRows = 1
++Output: "PAYPALISHIRING"
++
++Example 2:
++Input: s = "PAYPALISHIRING", numRows = 2
++Output: "PYAIHRNAPLSIIG"
++Explanation:
++P Y A ...
++A P L ...
++
++Example 3:
++Input: s = "PAYPALISHIRING", numRows = 3
++Output: "PAHNAPLSIIGYIR"
++Explanation:
++P   A   H   N
++A P L S I I G
++Y   I   R
++
++Example 4:
++Input: s = "PAYPALISHIRING", numRows = 4
++Output: "PINALSIGYAHRPI"
++Explanation:
++P     I    N
++A   L S  I G
++Y A   H R
++P     I
++
++Example 5:
++Input: s = "PAYPALISHIRING", numRows = 5
++Output: "PHASIYIRPLIGAN"
++Explanation:
++P       H
++A     S I
++Y   I   R
++P L     I G
++A       N
++ */
++public class ZigzagConversion {
++    public static void main(String[] args) {
++        String s = "PAYPALISHIRING";
++        int numRows = 2;
++        String zigzagString = convert(s, numRows);
++        System.out.println("Zigzag Conversion String: " + zigzagString);
++    }
++
++    public static String convert(String s, int numRows) {
++        if (numRows == 1 || s.length() <= numRows) {
++            return s;
++        }
++
++        StringBuilder[] rows = new StringBuilder[numRows];
++        for (int i = 0; i < numRows; i++) {
++            rows[i] = new StringBuilder();
++        }
++
++        int row = 0;
++        boolean goingDown = false;
++
++        for (char c : s.toCharArray()) {
++            rows[row].append(c);
++            if (row == 0 || row == numRows - 1) {
++                goingDown = !goingDown;
++            }
++            row += goingDown ? 1 : -1;
++        }
++
++        StringBuilder result = new StringBuilder();
++        for (StringBuilder rowString : rows) {
++            result.append(rowString);
++        }
++
++        return result.toString();
++    }
++
++//    public static String convert(String s, int numRows) {
++//        String zigzagString = "";
++//        int[][] zigzagArr = new int[numRows][s.length()];
++//        int strIndex = 0;
++//
++//        for (int column = 0; column < s.length(); column++) {
++//            for (int row = 0; row < numRows; row++) {
++//                zigzagArr[row][column] = s.charAt(strIndex);
++//                strIndex++;
++//            }
++//            if (strIndex >= s.length()) {
++//                break;
++//            }
++//        }
++//
++//        // traverse the zigzagArr and populate the zigzagString.
++//
++//
++//        return zigzagString;
++//    }
++}
+Index: src/main/java/pvt/code/practice/scenarios/RateLimiter.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/pvt/code/practice/scenarios/RateLimiter.java b/src/main/java/pvt/code/practice/scenarios/RateLimiter.java
+new file mode 100644
+--- /dev/null	
++++ b/src/main/java/pvt/code/practice/scenarios/RateLimiter.java	
+@@ -0,0 +1,45 @@
++package pvt.code.practice.scenarios;
++
++import java.time.Instant;
++
++public class RateLimiter {
++    private final int maxRequests;
++    private final long refillIntervalMillis;
++    private int tokens;
++    private long lastRefillTime;
++
++    public RateLimiter(int maxRequests, long refillIntervalMillis) {
++        this.maxRequests = maxRequests;
++        this.refillIntervalMillis = refillIntervalMillis;
++        this.tokens = maxRequests;
++        this.lastRefillTime = Instant.now().toEpochMilli();
++    }
++
++    public synchronized boolean allowRequest(int reqId) {
++        refillTokens(reqId);
++
++        if (tokens > 0) {
++            tokens--;
++            System.out.println("Request " + reqId + " || Subtracting Tokens from bucket || UPDATED Value of tokens : " + tokens);
++            return true;
++        }
++        return false;
++    }
++
++    private void refillTokens(int reqId) {
++        long now = Instant.now().toEpochMilli();
++        long elapsedTime = now - lastRefillTime;
++        int tokensToAdd = (int) (elapsedTime / refillIntervalMillis);
++
++        System.out.println("Request " + reqId + " || Value of now : " + now);
++        System.out.println("Request " + reqId + " || Value of elapsedTime : " + elapsedTime);
++        System.out.println("Request " + reqId + " || Value of tokensToAdd : " + tokensToAdd);
++
++        if (tokensToAdd > 0) {
++            tokens = Math.min(tokens + tokensToAdd, maxRequests);
++            lastRefillTime = now;
++            System.out.println("Request " + reqId + " || Adding Tokens to bucket || UPDATED Value of tokens : " + tokens);
++            System.out.println("Request " + reqId + " || UPDATED Value of lastRefillTime : " + lastRefillTime);
++        }
++    }
++}
+Index: src/main/java/pvt/code/practice/scenarios/MovieApplication.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/pvt/code/practice/scenarios/MovieApplication.java b/src/main/java/pvt/code/practice/scenarios/MovieApplication.java
+new file mode 100644
+--- /dev/null	
++++ b/src/main/java/pvt/code/practice/scenarios/MovieApplication.java	
+@@ -0,0 +1,51 @@
++package pvt.code.practice.scenarios;
++import java.util.Random;
++
++/*
++    We are building a movie application. But for that, we need to fetch details about movies from IMDB. But IMDB
++    strictly enforces a maximum of 'n' requests within a second or charge heavily if limit is exceed.  So can you
++    write an in-memory rate limiter to protect against overcharging?
++ */
++public class MovieApplication {
++    private static final int MAX_REQUESTS_PER_SECOND = 5; // Adjust according to your needs
++    private static final long REFILL_INTERVAL_MILLIS = 1000; // 1 second
++    private static final Random random = new Random();
++
++    private final RateLimiter rateLimiter;
++
++    public MovieApplication() {
++        this.rateLimiter = new RateLimiter(MAX_REQUESTS_PER_SECOND, REFILL_INTERVAL_MILLIS);
++    }
++
++    public void fetchMovieDetailsFromIMDB(int reqId) {
++        if (rateLimiter.allowRequest(reqId)) {
++            // Make HTTP request to fetch movie details from IMDB
++            System.out.println("Fetching movie details from IMDB for Request " + reqId);
++        } else {
++            System.out.println("Request " + reqId + " rejected. Rate limit exceeded.");
++        }
++    }
++
++    public static void main(String[] args) {
++        MovieApplication app = new MovieApplication();
++        System.out.println("============================================================================");
++        System.out.println("Value of MAX_REQUESTS_PER_SECOND : " + MAX_REQUESTS_PER_SECOND);
++        System.out.println("Value of REFILL_INTERVAL_MILLIS : " + REFILL_INTERVAL_MILLIS);
++
++        // Simulate making requests to fetch movie details
++        for (int reqId = 1; reqId <= 10; reqId++) {
++            System.out.println("============================================================================");
++            System.out.println("Started making Request " + reqId);
++            app.fetchMovieDetailsFromIMDB(reqId);
++
++            try {
++                int randomDelay = random.nextInt(101) + 100; // Generate random value between 100ms and 200ms
++                Thread.sleep(randomDelay); // Sleep for random delay
++            } catch (InterruptedException e) {
++                e.printStackTrace();
++            }
++        }
++
++        System.out.println("============================================================================");
++    }
++}
+Index: src/main/java/pvt/code/practice/hard/PictureCompressionAlgorithm.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/pvt/code/practice/hard/PictureCompressionAlgorithm.java b/src/main/java/pvt/code/practice/hard/PictureCompressionAlgorithm.java
+new file mode 100644
+--- /dev/null	
++++ b/src/main/java/pvt/code/practice/hard/PictureCompressionAlgorithm.java	
+@@ -0,0 +1,73 @@
++package pvt.code.practice.hard;
++
++/*
++
++images are balck and while, square
++Hover over a message to pin it
++keep
++You
++4:49 PM
++compression logic:
++image, create a tree, enpty node.
++divide image into 4 equal quadrants
++add 4 children to the tree nodes, balnk nodes
++re-divide the 4 quads into 4 more...now 16 quads..
++add 4 children again...so totla 16 children...
++keep doing it till the squares are of the size 2*2 in the image
++add 4 children in the tree
++You
++4:52 PM
++values will be present only in the child node initially... from matrix to ta tree.
++next is the compression logic
++You
++4:53 PM
++if all 4 nodes have same value, delete those children and put the same value to the parent node of the leaf nodes.
++NOTE: values are either 0 or 1
++Mohit Garg
++5:00 PM
++px = no of pixels in a row
++
++for(int i=0; i++; i<px)
++for(int j=0; j++; j<px)
++output[i][j] = operator(image1[i][j], image2[i][j])
++You
++5:07 PM
++have a method with inputs as 2 trees, and return a final tree
++
++before compression
++    N/A                 ||          N/A
++N/A     ,   N/A           ||  N/A         ,   N/A
++1 1 0 1 , 0 0 0 0       ||  1 1 1 1   , 0 0 0 0
++
++after compression
++    N/A                 ||          N/A
++N/A     ,   0           ||      1        ,   0
++1 1 0 1 ,
++
++//output[i][j] = operator(0, 1)
++//output[i][j] = operator(null, 1)//not applicable
++
++FINAL OUTPUT (without compression, based on operator())
++    N/A
++N/A     ,   0
++1 1 0 1 ,
++
++FINAL OUTPUT (with compression)
++    N/A
++N/A     ,   0
++1 1 0 1 ,
++
++ */
++public class PictureCompressionAlgorithm {
++    public static void main(String[] args) {
++
++        // receive 2 input trees that are already compressed...tree1 and tree2
++        // traverse tree1 and temporarily store it in variable1
++            //
++        // traverse tree2 and temporarily store it in variable2
++        // pass variable 1 and 2 into operator() ... returns output value
++        // construct final output tree with returned value
++        // compress final output tree
++
++    }
++}
+Index: src/main/java/pvt/code/practice/medium/SameRowColumnPairs.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/pvt/code/practice/medium/SameRowColumnPairs.java b/src/main/java/pvt/code/practice/medium/SameRowColumnPairs.java
+new file mode 100644
+--- /dev/null	
++++ b/src/main/java/pvt/code/practice/medium/SameRowColumnPairs.java	
+@@ -0,0 +1,62 @@
++package pvt.code.practice.medium;
++
++import java.util.*;
++
++/*
++Inputs:
++int[][] arr2D =
++3 2 1
++4 7 8
++2 7 7
++
++Output:
++1
++
++Reasoning:
++pairs of same rows and columns = 1
++row number --> [2, 7, 7]
++column --> [2, 7, 7]
++ */
++public class SameRowColumnPairs {
++
++    public static void main(String[] args) {
++        int[][] arr2D = {
++                {3, 2, 1},
++                {4, 7, 8},
++                {2, 7, 7}
++        };
++
++        int result = countSameRowColumnPairs(arr2D);
++        System.out.println("Output: " + result); // Output: 1
++    }
++
++    public static int countSameRowColumnPairs(int[][] arr2D) {
++        int size = arr2D.length;
++        Set<String> uniqueRows = new HashSet<>();
++        Set<String> uniqueColumns = new HashSet<>();
++
++        // Fill uniqueRows and uniqueColumns
++        for (int i = 0; i < size; i++) {
++            StringBuilder rowString = new StringBuilder();
++            StringBuilder columnString = new StringBuilder();
++            for (int j = 0; j < size; j++) {
++                rowString.append(arr2D[i][j]).append(" ");
++                columnString.append(arr2D[j][i]).append(" ");
++            }
++            uniqueRows.add(rowString.toString().trim());
++            uniqueColumns.add(columnString.toString().trim());
++        }
++
++        // Finding common elements between uniqueRows and uniqueColumns
++//        Set<String> commonStrings = new HashSet<>(uniqueRows);
++//        commonStrings.retainAll(uniqueColumns);
++        Set<String> commonStrings = new HashSet<>();
++        for (String row : uniqueRows) {
++            if (uniqueColumns.contains(row)) {
++                commonStrings.add(row);
++            }
++        }
++
++        return commonStrings.size();
++    }
++}
+Index: src/main/java/pvt/code/practice/medium/NumberCollision.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/pvt/code/practice/medium/NumberCollision.java b/src/main/java/pvt/code/practice/medium/NumberCollision.java
+new file mode 100644
+--- /dev/null	
++++ b/src/main/java/pvt/code/practice/medium/NumberCollision.java	
+@@ -0,0 +1,88 @@
++package pvt.code.practice.medium;
++
++import java.util.*;
++
++/*
++Scenario 1 : Inputs:
++int[] arr = [10, 5, -7]
++
++Scenario 1 : Output:
++[10]
++
++Scenario 2 : Inputs:
++int[] arr = [-8, 2, 10]
++
++Scenario 2 : Output:
++[-8, 2, 10]
++
++Reasoning:
++positive numbers move right ride
++negative numbers move left side
++So, for the scenario 1, int[] arr = [10, 5, -7]
++10 is a positive number, and thus it will move to the right side.
++5 is a positive number, and thus it will move to the right side.
++-7 is a negative number, and thus it will move to the left side.
++NOW, when -7 moves to the left side and 5 moves to the right side, then its a collision. Due to this collision, only
++one number will survive. This is decided based on the below logic:
++--> -7 is a more powerful number in the negative series compared to the +5 in the positive series. So -7 wins the collision.
++Thus, the current updated array becomes:
++arr = [10, -7]
++
++Then again there is a collision happening between 10 and -7.
++NOW, 10 is a more powerful number in the positive series compared to the -7 in the negative series. So 10 wins the collision.
++Thus, the current updated array becomes:
++arr = [10]
++
++There are no more chances of collision. This should be the output.
++ */
++public class NumberCollision {
++
++    public static void main(String[] args) {
++        // Test scenarios
++        int[] arr1 = {10, 5, -7};
++        int[] arr2 = {-8, 2, 10};
++        int[] arr3 = {-10, 5, -8, 3, 7, -4, 6, -9, 2};
++
++        // Resolve collisions
++        int[] result1 = resolveCollisions(arr1);
++        int[] result2 = resolveCollisions(arr2);
++        int[] result3 = resolveCollisions(arr3);
++
++        // Print results
++        System.out.println("Scenario 1: " + Arrays.toString(result1)); // Output: [10]
++        System.out.println("Scenario 2: " + Arrays.toString(result2)); // Output: [-8, 2, 10]
++        System.out.println("Scenario 3: " + Arrays.toString(result3)); // Output: [-10, -8, -9, 2]
++    }
++
++    public static int[] resolveCollisions(int[] arr) {
++        // Convert the array to a list for easier manipulation
++        List<Integer> list = new ArrayList<>();
++        for (int num : arr) {
++            list.add(num);
++        }
++
++        boolean collided;
++        do {
++            collided = false;
++            for (int i = 0; i < list.size(); i++) {
++                int num = list.get(i);
++                if (num < 0 && i > 0 && list.get(i - 1) > 0) { // Negative number collides with positive number
++                    collided = true;
++                    if (Math.abs(num) > list.get(i - 1)) {
++                        list.remove(i - 1); // Positive number eliminated
++                    } else {
++                        list.remove(i); // Negative number eliminated
++                    }
++                    break;
++                }
++            }
++        } while (collided);
++
++        // Convert the list back to an array
++        int[] result = new int[list.size()];
++        for (int i = 0; i < list.size(); i++) {
++            result[i] = list.get(i);
++        }
++        return result;
++    }
++}
+Index: src/main/java/pvt/code/practice/medium/Medium1.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/pvt/code/practice/medium/Medium1.java b/src/main/java/pvt/code/practice/medium/Medium1.java
+new file mode 100644
+--- /dev/null	
++++ b/src/main/java/pvt/code/practice/medium/Medium1.java	
+@@ -0,0 +1,37 @@
++package pvt.code.practice.medium;
++
++import java.util.Arrays;
++
++/*
++Inputs:
++int[] nums = {0,1,-5,3,0,2,0,1}
++
++Output:
++{1,-5,3,2,1,0,0,0}
++
++Reasoning:
++all non-zero elements should be at the beginning, and zeros at the end
++ */
++public class Medium1 {
++    public static void main(String[] args) {
++        Medium1 cus = new Medium1();
++
++        int[] nums = new int[]{0, 1, -5, 3, 0, 2, 0, 1};
++        int[] newNum = cus.solve(nums);
++
++        System.out.println(Arrays.toString(newNum));
++    }
++
++    private int[] solve(int[] nums) {
++        for (int i = 0; i < nums.length - 1; i++) {
++            for (int j = i + 1; j < nums.length; j++) {
++                if (nums[i] == 0) {
++                    int temp = nums[i];
++                    nums[i] = nums[j];
++                    nums[j] = temp;
++                }
++            }
++        }
++        return nums;
++    }
++}
+Index: src/main/java/pvt/code/practice/medium/SumAfterOperations.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/pvt/code/practice/medium/SumAfterOperations.java b/src/main/java/pvt/code/practice/medium/SumAfterOperations.java
+new file mode 100644
+--- /dev/null	
++++ b/src/main/java/pvt/code/practice/medium/SumAfterOperations.java	
+@@ -0,0 +1,72 @@
++package pvt.code.practice.medium;
++
++import java.util.Arrays;
++import java.util.Collections;
++import java.util.List;
++import java.util.PriorityQueue;
++
++/*
++Inputs:
++List<Integer> nums = {10, 7, 20}
++k = 4 (iterations)
++
++Output:
++5 + 4 + 5 = 14
++
++Reasoning:
++{10, 7, 20}
++{10, 7, 10} --> Highest = 20, divide by 2 = 10, replace 20 with 10
++{5, 7, 10} --> Highest = 10, divide by 2 = 5, replace 10 with 5
++{5, 7, 5} --> Highest = 10, divide by 2 = 5, replace 10 with 5
++{5, 4, 5} --> Highest = 7, divide by 2 = 3.5, Ceiling value is 4, replace 7 with 4
++ */
++public class SumAfterOperations {
++
++    public static void main(String[] args) {
++        List<Integer> nums = Arrays.asList(10, 7, 20);
++        int k = 4;
++        System.out.println("Sum after " + k + " operations: " + sumAfterOperations(nums, k));
++    }
++
++    public static int sumAfterOperations(List<Integer> nums, int k) {
++        // Create a priority queue to store the elements in descending order
++        PriorityQueue<Integer> maxHeap = new PriorityQueue<>(Collections.reverseOrder());
++
++        // Initialize the maxHeap with the input list
++        maxHeap.addAll(nums);
++
++        // Perform k operations
++        for (int i = 0; i < k; i++) {
++            int maxNum = maxHeap.poll(); // Get the maximum number
++            int newNum = (int) Math.ceil(maxNum / 2.0); // Calculate the new value
++            maxHeap.offer(newNum); // Add the new value back to the maxHeap
++        }
++
++        // Calculate the sum of all elements in the maxHeap
++        int sum = 0;
++        for (int num : maxHeap) {
++            sum += num;
++        }
++        return sum;
++    }
++
++//    public static int sumAfterOperations(List<Integer> nums, int k) {
++//        // Perform k operations
++//        for (int i = 0; i < k; i++) {
++//            // Sort the list in descending order
++//            Collections.sort(nums, Collections.reverseOrder());
++//            // Divide the highest number by 2 and round up
++//            int maxNum = nums.get(0);
++//            int newNum = (int) Math.ceil(maxNum / 2.0);
++//            // Replace the highest number with the new value
++//            nums.set(0, newNum);
++//        }
++//
++//        // Calculate the sum of all elements in the modified list
++//        int sum = 0;
++//        for (int num : nums) {
++//            sum += num;
++//        }
++//        return sum;
++//    }
++}
