@@ -24,9 +24,16 @@
 hs_err_pid*
 replay_pid*
 
-!/.gradle/
-!/.idea/
-!/build/
-/.gradle/
-/.idea/
-/build/
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# Gradle
+.gradle/
+build/
+
+# AI / tooling
+.ai/
+
+# OS
+.DS_Store
