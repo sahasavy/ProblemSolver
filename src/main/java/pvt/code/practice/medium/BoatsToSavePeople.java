@@ -27,6 +27,9 @@ Explanation: 4 boats (3), (3), (4), (5)
 Constraints:
 1 <= people.length <= 5 * 104
 1 <= people[i] <= limit <= 3 * 104
+
+Edge Case - Handle the edge case where the weight of a person is greater than the limit and I want to ignore the
+person and let him drown.
  */
 public class BoatsToSavePeople {
     public static void main(String[] args) {
@@ -51,6 +54,13 @@ public class BoatsToSavePeople {
         int boats = 0;
 
         while (left <= right) {
+            // Optional Logic : Edge Case
+            if (people[right] > limit) {
+                System.out.println("Person with weight " + people[right] + " just drowned...!!!");
+                right--;
+                continue;
+            }
+
             if (people[left] + people[right] <= limit) {
                 left++; // If the lightest person and the heaviest person can fit in one boat, move the left pointer
             }
