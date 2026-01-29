@@ -1,3 +1,23 @@
+# 📚 Java Question Bank – Contents
+
+1. [Topic 1: Java Fundamentals & Language Basics](#-topic-1-java-fundamentals--language-basics)
+2. [Topic 2: Object-Oriented Programming (OOP)](#-topic-2-object-oriented-programming-oop-in-java)
+3. [Topic 3: Java Memory Model (JMM) & JVM Internals](#-topic-3-java-memory-model-jmm--jvm-internals)
+4. [Topic 4: Garbage Collection (GC) & Performance](#-topic-4-garbage-collection-gc--performance-in-java)
+5. [Topic 5: Exception Handling](#-topic-5-exception-handling-in-java)
+6. [Topic 6: Java Collections Framework](#-topic-6-java-collections-framework)
+7. [Topic 7: Concurrency & Multithreading](#-topic-7-concurrency--multithreading-in-java)
+8. [Topic 8: Java 8+ Features (Modern Java)](#-topic-8-java-8-features-modern-java)
+9. [Topic 9: Serialization & Deserialization](#-topic-9-serialization--deserialization-in-java)
+10. [Topic 10: Reflection, Annotations & Proxies](#-topic-10-reflection-annotations--proxies-in-java)
+11. [Topic 11: Design Patterns (Java-centric)](#-topic-11-design-patterns-in-java-gof--real-world-usage)
+12. [Topic 12: Java I/O & NIO](#-topic-12-java-io--nio)
+13. [Topic 13: Security & Best Practices](#-topic-13-security--best-practices-in-java)
+14. [Topic 14: JVM, Java & System Design Intersections](#-topic-14-jvm-java--system-design-intersections)
+15. [Topic 15: Tricky / Brain-Teaser Java Questions](#-topic-15-tricky--brain-teaser-java-questions-interview-traps)
+
+---
+
 # 📘 Topic 1: Java Fundamentals & Language Basics
 
 ---
@@ -432,6 +452,8 @@ Implementing class must override explicitly.
 ## ✅ End of Topic 1
 
 ---
+
+[⬆ Back to Contents](#-java-question-bank--contents)
 
 ---
 
@@ -879,6 +901,8 @@ Because constructors initialize objects, not behavior.
 
 ---
 
+[⬆ Back to Contents](#-java-question-bank--contents)
+
 ---
 
 # 📘 Topic 3: Java Memory Model (JMM) & JVM Internals
@@ -1322,6 +1346,8 @@ No — GC only frees unreachable objects.
 
 ---
 
+[⬆ Back to Contents](#-java-question-bank--contents)
+
 ---
 
 # 📘 Topic 4: Garbage Collection (GC) & Performance in Java
@@ -1735,6 +1761,8 @@ Code and allocation patterns first.
 
 ---
 
+[⬆ Back to Contents](#-java-question-bank--contents)
+
 ---
 
 # 📘 Topic 5: Exception Handling in Java
@@ -2136,6 +2164,8 @@ No — log once, near boundary.
 
 ---
 
+[⬆ Back to Contents](#-java-question-bank--contents)
+
 ---
 
 # 📘 Topic 6: Java Collections Framework
@@ -2525,6 +2555,8 @@ Use:
 ## ✅ End of Topic 6
 
 ---
+
+[⬆ Back to Contents](#-java-question-bank--contents)
 
 ---
 
@@ -2919,6 +2951,8 @@ thenAccept();
 ## ✅ End of Topic 7
 
 ---
+
+[⬆ Back to Contents](#-java-question-bank--contents)
 
 ---
 
@@ -3350,6 +3384,8 @@ Yes — but align with LTS versions.
 
 ---
 
+[⬆ Back to Contents](#-java-question-bank--contents)
+
 ---
 
 # 📘 Topic 9: Serialization & Deserialization in Java
@@ -3754,6 +3790,8 @@ Avoid Java Serialization unless absolutely required.
 ## ✅ End of Topic 9
 
 ---
+
+[⬆ Back to Contents](#-java-question-bank--contents)
 
 ---
 
@@ -4162,6 +4200,8 @@ Yes — but with caution and caching.
 ## ✅ End of Topic 10
 
 ---
+
+[⬆ Back to Contents](#-java-question-bank--contents)
 
 ---
 
@@ -4580,6 +4620,8 @@ Using a pattern without understanding why.
 
 ---
 
+[⬆ Back to Contents](#-java-question-bank--contents)
+
 ---
 
 # 📘 Topic 12: Java I/O & NIO
@@ -4967,6 +5009,8 @@ No — complexity must justify benefit.
 
 ---
 
+[⬆ Back to Contents](#-java-question-bank--contents)
+
 ---
 
 # 📘 Topic 13: Security & Best Practices in Java
@@ -5349,6 +5393,8 @@ No — every engineer owns security.
 
 ---
 
+[⬆ Back to Contents](#-java-question-bank--contents)
+
 ---
 
 # 📘 Topic 14: JVM, Java & System Design Intersections
@@ -5727,6 +5773,8 @@ Ability to reason about JVM behavior under load.
 ## ✅ End of Topic 14
 
 ---
+
+[⬆ Back to Contents](#-java-question-bank--contents)
 
 ---
 
@@ -6282,5 +6330,9 @@ Design with JVM behavior in mind, not just syntax.
 ---
 
 ## ✅ End of Topic 15
+
+---
+
+[⬆ Back to Contents](#-java-question-bank--contents)
 
 ---
