@@ -216,10 +216,8 @@ References → Stack
 String a = new String("x");
 String b = new String("x");
 
-a ==b        // false
-a.
-
-equals(b)   // true
+a == b;             // false
+a.equals(b);        // true
 ```
 
 ---
@@ -328,7 +326,7 @@ Used in:
 ```java
 Integer a = 100;
 Integer b = 100;
-a ==b // ?
+a == b // ?
 ```
 
 ✅ **Answer:**
@@ -337,7 +335,7 @@ a ==b // ?
 ```java
 Integer a = 200;
 Integer b = 200;
-a ==b // false
+a == b // false
 ```
 
 ---
@@ -578,9 +576,7 @@ Types:
 
 ```java
 Vehicle v = new Car();
-v.
-
-move(); // calls Car's implementation
+v.move(); // calls Car's implementation
 ```
 
 ---
@@ -1849,15 +1845,12 @@ To force explicit handling of recoverable failures.
 #### 📘 Answer
 
 ```java
-try{
-riskyCode();
-}catch(
-Exception e){
-
-handle();
-}finally{
-
-cleanup();
+try {
+    riskyCode();
+} catch(Exception e) {
+    handle();
+} finally {
+    cleanup();
 }
 ```
 
@@ -1914,11 +1907,13 @@ No — it hides logic and causes bugs.
 #### 📘 Answer
 
 ```java
-try{
-        }catch(IOException e){
-        }catch(
-Exception e){
-        }
+try {
+
+} catch(IOException e) {
+
+} catch(Exception e) {
+
+}
 ```
 
 Rules:
@@ -1937,8 +1932,7 @@ Rules:
 Yes (Java 7+):
 
 ```java
-catch(IOException |
-SQLException e){}
+catch(IOException | SQLException e) {}
 ```
 
 ---
@@ -1950,8 +1944,9 @@ SQLException e){}
 Automatically closes resources implementing `AutoCloseable`.
 
 ```java
-try(BufferedReader br = new BufferedReader(...)){
-        }
+try(BufferedReader br = new BufferedReader(...)) {
+
+}
 ```
 
 * Eliminates boilerplate
@@ -2030,7 +2025,7 @@ Best practices:
 * Preserve root cause
 
 ```java
-throw new OrderFailedException("msg",cause);
+throw new OrderFailedException("msg", cause);
 ```
 
 ---
@@ -2072,10 +2067,8 @@ To enforce error handling discipline.
 Original exception hidden by another exception.
 
 ```java
-catch(Exception e){
-        throw new
-
-RuntimeException();
+catch (Exception e) {
+    throw new RuntimeException();
 }
 ```
 
@@ -2098,6 +2091,7 @@ Yes.
 
 ```java
 public FileReader() throws IOException {
+    
 }
 ```
 
@@ -2123,9 +2117,13 @@ No — object never exists.
 Lambdas don’t allow checked exceptions unless declared.
 
 ```java
-stream.forEach(x ->{
-        try{...}catch(...){}
-        });
+stream.forEach(x -> {
+        try {
+            ...
+        } catch(...) {
+            
+        }
+});
 ```
 
 ---
@@ -2322,8 +2320,8 @@ Load factor determines **when resizing occurs**.
 Default:
 
 ```java
-capacity =16
-loadFactor =0.75
+capacity = 16
+loadFactor = 0.75
 resize at 12 entries
 ```
 
@@ -2705,6 +2703,7 @@ An object’s monitor (intrinsic lock).
 
 ```java
 synchronized void method() {
+    
 }
 ```
 
@@ -2716,7 +2715,9 @@ Locks:
 Block:
 
 ```java
-synchronized(obj){}
+synchronized(obj) {
+    
+}
 ```
 
 More granular and efficient.
@@ -2928,13 +2929,7 @@ No — blocking defeats work stealing.
 * Functional composition
 
 ```java
-CompletableFuture.supplyAsync()
-    .
-
-thenApply()
-    .
-
-thenAccept();
+CompletableFuture.supplyAsync().thenApply().thenAccept();
 ```
 
 ---
@@ -3001,17 +2996,16 @@ No — default methods were added specifically to avoid breaking existing interf
 A lambda is a **compact representation of a function**.
 
 ```java
-(a,b)->a +b
+(a,b) -> a + b
 ```
 
 Equivalent to:
 
 ```java
-new Comparator<Integer>(){
-
-public int compare(Integer a, Integer b) {
-    return a - b;
-}
+new Comparator<Integer>() {
+    public int compare(Integer a, Integer b) {
+        return a - b;
+    }
 }
 ```
 
@@ -3075,16 +3069,7 @@ Source → Intermediate Ops → Terminal Op
 Example:
 
 ```java
-list.stream()
-    .
-
-filter(x ->x >10)
-        .
-
-map(x ->x *2)
-        .
-
-collect(toList());
+list.stream().filter(x -> x > 10).map(x -> x * 2).collect(toList());
 ```
 
 ---
@@ -3336,13 +3321,7 @@ Examples:
 Allows non-blocking composition.
 
 ```java
-cf.thenApply()
-  .
-
-thenCompose()
-  .
-
-thenAccept();
+cf.thenApply().thenCompose().thenAccept();
 ```
 
 ---
@@ -6300,32 +6279,6 @@ Breaks:
 
 ✅ **Answer:**
 Collections depend on it.
-
----
-
-## 🧠 FINAL INTERVIEW-LEVEL QUESTION
-
----
-
-### Q18. What’s the biggest Java mistake senior engineers still make?
-
-#### 📘 Answer
-
-Not thinking in terms of:
-
-* Object lifecycle
-* Memory behavior
-* Concurrency visibility
-* Failure modes
-
----
-
-#### ⚠️ Tricky Follow-up
-
-**How do you avoid this?**
-
-✅ **Answer:**
-Design with JVM behavior in mind, not just syntax.
 
 ---
 
