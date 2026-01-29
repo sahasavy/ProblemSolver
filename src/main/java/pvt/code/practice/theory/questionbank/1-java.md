@@ -398,13 +398,45 @@ No.
 
 #### 📘 Answer
 
-Yes, **covariant return types** allowed.
+Yes, you can change the return type when overriding a method, but it must be a **covariant return types**.
+This means the return type in the overriding method must be a subclass of the return type in the superclass's method.
+
+Example
+Here is an illustration of how covariant return types work:
 
 ```java
-Parent get();
+// Superclass
+class Animal {
+    // The superclass method returns an Animal object
+    public Animal get() {
+        return new Animal();
+    }
+}
 
-Child get(); // valid
+// Subclass
+class Dog extends Animal {
+    // The overriding method returns a Dog object, 
+    // which is a subclass of Animal
+    @Override
+    public Dog get() {
+        return new Dog();
+    }
+}
 ```
+
+In this example:
+
+* Animal is the return type in the superclass method.
+* Dog is the return type in the subclass method.
+* Dog is a subclass of Animal, so this is valid covariant overriding.
+
+Key Points
+
+* **Primitive Types**: Covariant return types do not apply to primitive data types (like int, boolean, double, etc.). If
+  a method in the superclass returns an int, the overriding method must also return an int.
+* **Java Version**: Support for covariant return types was introduced in Java 5.
+* **Access Modifiers**: When overriding, you cannot reduce the visibility of an access modifier (e.g., you can change a
+  protected method to public, but not vice versa).
 
 ---
 
@@ -421,7 +453,8 @@ Not allowed.
 
 #### 📘 Answer
 
-To avoid **Diamond Problem**:
+Java does not support multiple inheritance of classes primarily to maintain simplicity and avoid the **Diamond
+Problem**, a situation that creates dangerous ambiguity and complexity in code.
 
 ```
     A
@@ -431,10 +464,21 @@ To avoid **Diamond Problem**:
     D
 ```
 
-Java uses:
+Reasons for the Design Decision:
 
-* Interfaces
-* Default methods (resolved explicitly)
+* **The Diamond Problem (Ambiguity)**: This is the main technical reason. Consider a scenario where a class D inherits
+  from two classes, B and C, which both inherit from a common superclass A. If classes B and C both override a method
+  from A with different implementations, an object of class D wouldn't know which version of the method to call, leading
+  to a compilation error or unpredictable runtime behavior.
+* **Simplified Language Design**: Java's designers, drawing from C++ experience, intentionally omitted complex features
+  like multiple inheritance and operator overloading to make the language simpler, more readable, and easier to learn
+  and maintain. The philosophy emphasizes safety and predictability.
+* **Constructor Chaining Issues**: With multiple parent classes, the Java Virtual Machine (JVM) would face ambiguity in
+  determining which parent class's constructor to call first and in what order, complicating object creation and memory
+  layout.
+* **Fragile Base Class Problem**: Allowing multiple inheritance increases the risk that changes in a parent class could
+  inadvertently break the functionality of child classes (the "fragile base class problem"), making the code more
+  difficult to test and debug.
 
 ---
 
@@ -1246,19 +1290,22 @@ No — it’s about concurrency semantics.
 
 #### 📘 Answer
 
-`volatile` guarantees:
+The `volatile` keyword in Java is a variable modifier that guarantees visibility of changes to variables across threads
+and prevents instruction reordering by the compiler and CPU. It is a lightweight synchronization mechanism but does not
+provide atomicity for compound operations.
 
-* Visibility
-* Ordering
-
-Does NOT guarantee:
-
-* Atomicity (except for 64-bit reads/writes)
+But, for operations that require atomicity, such as incrementing a counter (counter++), `volatile` is insufficient, and
+you should use `synchronized` or classes from the `java.util.concurrent.atomic` package, such as `AtomicInteger`.
 
 ```
 Thread A → writes volatile
 Thread B → reads latest value
 ```
+
+Common use case include:
+
+* Implementing the **Double-Checked Locking** pattern for a thread-safe Singleton, to ensure that a partially
+  initialized object reference is not made visible to other threads.
 
 ---
 
@@ -1829,6 +1876,13 @@ No. Errors indicate JVM-level failures.
 | Base class         | `Exception` | `RuntimeException`   |
 | Examples           | IOException | NullPointerException |
 
+* **Checked exceptions** must be handled explicitly by the programmer at compile time. They force the developer to
+  anticipate and write code for potential, external failures, promoting robust error handling for recoverable
+  situations.
+* **Unchecked exceptions** are not required to be handled and typically indicate programming errors. They highlight
+  internal programming mistakes that should ideally be fixed through code correction (e.g., adding a null check) rather
+  than explicit exception handling in every method call.
+
 ---
 
 #### ⚠️ Tricky Follow-up
@@ -2043,11 +2097,23 @@ Rarely — only for truly recoverable flows.
 
 #### 📘 Answer
 
-Modern Java prefers **unchecked exceptions** because:
+**Checked Exceptions** (extend Exception, but not RuntimeException) are better for expected, recoverable errors (e.g.,
+FileNotFoundException, IOException). They force the compiler to ensure you handle them, promoting robust code.
 
-* Cleaner APIs
-* Better layering
-* Easier refactoring
+**Unchecked Exceptions** (extend RuntimeException or Error) are better for unexpected programming errors (e.g.,
+NullPointerException, IllegalArgumentException). They are not forced, allowing cleaner code when the caller cannot take
+any corrective action, or the error indicates a bug that should stop the program.
+
+Modern Java prefers **unchecked exceptions**.
+
+While checked exceptions provide compile-time safety, they have been criticized for creating boilerplate code and making
+code less readable, particularly when using lambdas or functional programming (e.g., streams).
+
+* **Modern Frameworks**: Frameworks like Spring and Hibernate convert checked exceptions into unchecked exceptions to
+  avoid cluttering the code.
+* **Opinion on Usage**: Many developers feel checked exceptions are overused in the Java standard library, and often
+  argue that all exceptions should ideally be unchecked, or that unchecked exceptions should be used in most
+  application-level code.
 
 ---
 
