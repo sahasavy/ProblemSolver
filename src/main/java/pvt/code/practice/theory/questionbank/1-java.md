@@ -2739,19 +2739,28 @@ Use iterator’s `remove()` or concurrent collections.
 
 #### 📘 Answer
 
-A **thread** is the smallest unit of execution within a process.
+A **thread** is the smallest unit of execution within a Java process.
+While a **process** has its own memory space, **threads share the same heap memory** but have their own stack.
 
-Multithreading allows:
+Why multithreading exists:
 
-* Parallelism (CPU utilization)
-* Responsiveness
-* Resource sharing
+* Modern CPUs are multi-core
+* Waiting on I/O wastes CPU cycles
+* Applications must remain responsive
+
+Multithreading enables:
+
+* **Parallelism** → multiple cores doing work simultaneously
+* **Concurrency** → overlapping tasks (CPU + I/O)
+* **Responsiveness** → UI / request threads don’t block
+
+Conceptually:
 
 ```
 Process
- ├── Thread 1
- ├── Thread 2
- └── Thread N
+ ├── Thread A (stack A)
+ ├── Thread B (stack B)
+ └── Shared Heap
 ```
 
 ---
@@ -2761,7 +2770,12 @@ Process
 **Does multithreading always improve performance?**
 
 ✅ **Answer:**
-No — context switching and contention can degrade performance.
+No. Poorly designed multithreading can:
+
+* Increase context switching
+* Cause lock contention
+* Reduce cache locality
+  Performance improves only when concurrency matches workload.
 
 ---
 
@@ -2769,17 +2783,23 @@ No — context switching and contention can degrade performance.
 
 #### 📘 Answer
 
+Java threads move through well-defined states:
+
 ```
 NEW
  ↓ start()
-RUNNABLE
- ↓ (scheduler)
-RUNNING
- ↓ wait/sleep/block
-BLOCKED / WAITING
+RUNNABLE  ← (ready or running)
+ ↓
+BLOCKED / WAITING / TIMED_WAITING
  ↓
 TERMINATED
 ```
+
+Important clarifications:
+
+* **RUNNABLE** includes both “ready” and “running”
+* JVM does not expose a RUNNING state
+* Scheduling is OS-controlled, not JVM-controlled
 
 ---
 
@@ -2788,7 +2808,7 @@ TERMINATED
 **Is RUNNING a separate state in Java?**
 
 ✅ **Answer:**
-No — Java exposes it as RUNNABLE.
+No. JVM merges RUNNING and READY into RUNNABLE.
 
 ---
 
@@ -2796,13 +2816,23 @@ No — Java exposes it as RUNNABLE.
 
 #### 📘 Answer
 
-| Thread                   | Runnable             |
-|--------------------------|----------------------|
-| Represents thread        | Represents task      |
-| Inherits Thread          | Functional interface |
-| Single inheritance issue | Flexible             |
+This is a **design question**, not a syntax one.
 
-Best practice: **Prefer Runnable**
+* `Thread` represents **execution**
+* `Runnable` represents **task**
+
+Using Runnable:
+
+* Enables separation of concern
+* Allows class inheritance (Java has single inheritance)
+* Improves testability
+
+Example:
+
+```java
+Runnable task = () -> doWork();
+new Thread(task).start();
+```
 
 ---
 
@@ -2811,7 +2841,7 @@ Best practice: **Prefer Runnable**
 **Can Runnable return a value?**
 
 ✅ **Answer:**
-No — use `Callable`.
+No. For returning values or exceptions, use `Callable`.
 
 ---
 
@@ -2819,11 +2849,19 @@ No — use `Callable`.
 
 #### 📘 Answer
 
-| Aspect           | Runnable | Callable        |
-|------------------|----------|-----------------|
-| Return value     | ❌        | ✅               |
-| Throws exception | ❌        | ✅               |
-| Used with        | Thread   | ExecutorService |
+`Callable` was introduced to fix limitations of Runnable.
+
+|    Aspect    | Runnable |    Callable     |
+|:------------:|:--------:|:---------------:|
+| Return value |    ❌    |       ✅        |
+|  Exception   |    ❌    | Checked allowed |
+|  Execution   |  Thread  | ExecutorService |
+
+Callable integrates with `Future`, enabling:
+
+* Result retrieval
+* Cancellation
+* Timeout handling
 
 ---
 
@@ -2832,7 +2870,7 @@ No — use `Callable`.
 **How do you get result from Callable?**
 
 ✅ **Answer:**
-Using `Future`.
+Via `Future.get()`.
 
 ---
 
@@ -2844,16 +2882,17 @@ Using `Future`.
 
 #### 📘 Answer
 
-Synchronization ensures:
+Synchronization ensures **correctness in concurrent execution** by enforcing:
 
-* Mutual exclusion
-* Visibility
-* Ordering
+* **Mutual exclusion** → only one thread executes critical section
+* **Visibility** → changes are visible across threads
+* **Ordering** → prevents instruction reordering
 
-Achieved using:
+Without synchronization:
 
-* `synchronized` keyword
-* Locks
+* Race conditions
+* Data corruption
+* Non-deterministic bugs
 
 ---
 
@@ -2862,7 +2901,7 @@ Achieved using:
 **What exactly does synchronized lock?**
 
 ✅ **Answer:**
-An object’s monitor (intrinsic lock).
+An object’s **monitor** (intrinsic lock), not the code.
 
 ---
 
@@ -2870,26 +2909,26 @@ An object’s monitor (intrinsic lock).
 
 #### 📘 Answer
 
+* **Synchronized method**
+
+  * Locks entire method
+  * Coarse-grained
+* **Synchronized block**
+
+  * Locks specific object
+  * Fine-grained and preferred
+
+Example:
+
 ```java
-synchronized void method() {
-    
+synchronized (lock) {
+    criticalSection();
 }
 ```
 
-Locks:
+Granularity matters:
 
-* Instance → object lock
-* Static → class lock
-
-Block:
-
-```java
-synchronized(obj) {
-    
-}
-```
-
-More granular and efficient.
+* Smaller lock scope → better scalability
 
 ---
 
@@ -2898,7 +2937,7 @@ More granular and efficient.
 **Can synchronized block lock `this`?**
 
 ✅ **Answer:**
-Yes.
+Yes — `synchronized(this)` locks the current object.
 
 ---
 
@@ -2906,11 +2945,23 @@ Yes.
 
 #### 📘 Answer
 
-| volatile            | synchronized           |
-|---------------------|------------------------|
-| Visibility          | Visibility + Atomicity |
-| No blocking         | Blocking               |
-| No mutual exclusion | Mutual exclusion       |
+`volatile` solves **visibility**, not mutual exclusion.
+
+Guarantees:
+
+* Writes go directly to main memory
+* Reads always see latest value
+* Prevents instruction reordering
+
+Does NOT guarantee:
+
+* Atomicity (except single reads/writes)
+
+Use cases:
+
+* Flags
+* Status variables
+* One-writer, many-reader scenarios
 
 ---
 
@@ -2919,7 +2970,7 @@ Yes.
 **Is volatile enough for counters?**
 
 ✅ **Answer:**
-No — increment is not atomic.
+No. `count++` is a read–modify–write operation.
 
 ---
 
@@ -2927,14 +2978,18 @@ No — increment is not atomic.
 
 #### 📘 Answer
 
-* Must be called inside synchronized block
-* Operate on object monitor
+These are **inter-thread communication mechanisms** tied to object monitors.
 
-```
-wait() → releases lock
-notify() → wakes one thread
-notifyAll() → wakes all
-```
+Key rules:
+
+* Must be called inside synchronized context
+* `wait()` releases the lock
+* `notify()` wakes one thread
+* `notifyAll()` wakes all waiting threads
+
+Common usage:
+
+* Producer–Consumer pattern
 
 ---
 
@@ -2943,7 +2998,7 @@ notifyAll() → wakes all
 **Why is wait not in Thread class?**
 
 ✅ **Answer:**
-Because waiting is tied to object monitors.
+Because waiting happens on **shared resources**, not threads.
 
 ---
 
@@ -2957,6 +3012,9 @@ Because waiting is tied to object monitors.
 | Doesn’t release lock | Releases lock   |
 | Time-based           | Condition-based |
 
+`sleep()` is about pausing execution
+`wait()` is about coordination
+
 ---
 
 #### ⚠️ Tricky Follow-up
@@ -2964,7 +3022,7 @@ Because waiting is tied to object monitors.
 **Can wait timeout?**
 
 ✅ **Answer:**
-Yes — timed wait.
+Yes — timed waits are supported.
 
 ---
 
@@ -2976,16 +3034,20 @@ Yes — timed wait.
 
 #### 📘 Answer
 
-Deadlock occurs when:
+Deadlock occurs when threads wait indefinitely for each other.
 
-* Mutual exclusion
-* Hold and wait
-* No preemption
-* Circular wait
+Necessary conditions:
+
+1. Mutual exclusion
+2. Hold and wait
+3. No preemption
+4. Circular wait
+
+Classic scenario:
 
 ```
-Thread A → Lock 1 → waits for Lock 2
-Thread B → Lock 2 → waits for Lock 1
+Thread A → Lock X → waits for Lock Y
+Thread B → Lock Y → waits for Lock X
 ```
 
 ---
@@ -2995,7 +3057,11 @@ Thread B → Lock 2 → waits for Lock 1
 **How to prevent deadlocks?**
 
 ✅ **Answer:**
-Lock ordering, timeouts, lock-free algorithms.
+
+* Lock ordering
+* Timeouts
+* Avoid nested locks
+* Prefer higher-level concurrency utilities
 
 ---
 
@@ -3003,11 +3069,11 @@ Lock ordering, timeouts, lock-free algorithms.
 
 #### 📘 Answer
 
-| Issue      | Description                    |
-|------------|--------------------------------|
-| Deadlock   | Threads stuck forever          |
-| Livelock   | Threads active but no progress |
-| Starvation | Thread never gets CPU          |
+* **Deadlock** → no progress, threads blocked
+* **Livelock** → threads active but no progress
+* **Starvation** → thread never gets CPU
+
+Livelocks are especially tricky because the system appears “alive”.
 
 ---
 
@@ -3024,15 +3090,19 @@ Livelock.
 
 #### 📘 Answer
 
-ExecutorService decouples:
+ExecutorService abstracts:
 
-* Task submission
-* Thread management
-
-Provides:
-
-* Thread pools
+* Thread creation
+* Scheduling
 * Lifecycle management
+
+Benefits:
+
+* Thread reuse
+* Bounded resources
+* Cleaner APIs
+
+This is **the preferred way** to manage threads in modern Java.
 
 ---
 
@@ -3041,7 +3111,7 @@ Provides:
 **Why not create threads manually?**
 
 ✅ **Answer:**
-Thread creation is expensive and unbounded.
+Threads are expensive and unbounded creation leads to resource exhaustion.
 
 ---
 
@@ -3049,10 +3119,12 @@ Thread creation is expensive and unbounded.
 
 #### 📘 Answer
 
-* FixedThreadPool
-* CachedThreadPool
-* SingleThreadExecutor
-* ScheduledThreadPool
+* FixedThreadPool → predictable load
+* CachedThreadPool → short-lived tasks (dangerous)
+* SingleThreadExecutor → sequential execution
+* ScheduledThreadPool → delayed/periodic tasks
+
+Choosing wrong pool type is a **production failure cause**.
 
 ---
 
@@ -3061,7 +3133,7 @@ Thread creation is expensive and unbounded.
 **Why is CachedThreadPool dangerous?**
 
 ✅ **Answer:**
-Unbounded thread creation.
+It can create unlimited threads under load.
 
 ---
 
@@ -3071,12 +3143,18 @@ Unbounded thread creation.
 
 Designed for:
 
-* Divide-and-conquer
-* Recursive parallelism
+* Divide-and-conquer algorithms
+* Recursive tasks
 
 Uses:
 
-* Work stealing algorithm
+* Work-stealing
+* Small tasks distributed across CPUs
+
+Common in:
+
+* Parallel streams
+* Computational workloads
 
 ---
 
@@ -3085,7 +3163,7 @@ Uses:
 **Is ForkJoin suitable for blocking tasks?**
 
 ✅ **Answer:**
-No — blocking defeats work stealing.
+No — blocking breaks work-stealing efficiency.
 
 ---
 
@@ -3093,11 +3171,19 @@ No — blocking defeats work stealing.
 
 #### 📘 Answer
 
-* Asynchronous computation
-* Non-blocking
-* Functional composition
+`CompletableFuture` enables:
+
+* Asynchronous programming
+* Non-blocking composition
+* Better error handling
+
+Supports chaining:
 
 ```java
+thenApply → transform
+thenCompose → flatten
+thenAccept → consume
+
 CompletableFuture.supplyAsync().thenApply().thenAccept();
 ```
 
@@ -3108,7 +3194,7 @@ CompletableFuture.supplyAsync().thenApply().thenAccept();
 **Difference between `get()` and `join()`?**
 
 ✅ **Answer:**
-`get()` throws checked exception; `join()` throws unchecked.
+`get()` throws checked exceptions; `join()` throws unchecked.
 
 ---
 
