@@ -2244,26 +2244,33 @@ No — log once, near boundary.
 
 #### 📘 Answer
 
-The Java Collections Framework (JCF) is a **set of interfaces, implementations, and algorithms** to store and manipulate
-groups of objects.
+The **Java Collections Framework (JCF)** is a unified architecture for **representing, storing, and manipulating groups
+of objects**. Instead of every developer inventing their own data structures, Java provides a **standardized,
+well-tested, and optimized set of interfaces and implementations**.
 
-Key benefits:
+At a high level, JCF consists of:
 
-* Standardized APIs
-* High-performance implementations
-* Reduces boilerplate
-* Well-tested & optimized
+1. **Interfaces** – define contracts (e.g., `List`, `Set`, `Map`)
+2. **Implementations** – concrete data structures (e.g., `ArrayList`, `HashSet`)
+3. **Algorithms** – utility methods (`Collections.sort`, `Collections.binarySearch`)
 
-Core interfaces:
+Conceptually:
 
 ```
-Collection
+Collection (root)
  ├── List
  ├── Set
  └── Queue
 
 Map (separate hierarchy)
 ```
+
+Key benefits:
+
+* **Consistency**: Same APIs across different data structures
+* **Interchangeability**: Swap implementations with minimal code changes
+* **Performance**: Highly optimized and battle-tested
+* **Readability**: Clear intent (`List` vs `Set`)
 
 ---
 
@@ -2272,7 +2279,8 @@ Map (separate hierarchy)
 **Why does `Map` not extend `Collection`?**
 
 ✅ **Answer:**
-Because `Map` stores key-value pairs, not individual elements.
+Because `Map` does not store *individual elements* — it stores **key–value pairs**. Treating a map as a collection of
+values would lose the semantic importance of keys.
 
 ---
 
@@ -2280,11 +2288,25 @@ Because `Map` stores key-value pairs, not individual elements.
 
 #### 📘 Answer
 
-| Interface | Duplicates | Ordering  | Example   |
-|-----------|------------|-----------|-----------|
-| List      | ✅          | Preserved | ArrayList |
-| Set       | ❌          | Depends   | HashSet   |
-| Map       | Keys ❌     | Depends   | HashMap   |
+These interfaces differ mainly in **uniqueness, ordering, and access patterns**.
+
+| Interface | Key Property               | Use Case                                   |
+|-----------|----------------------------|--------------------------------------------|
+| **List**  | Ordered, allows duplicates | When order matters (e.g., logs, sequences) |
+| **Set**   | No duplicates              | Enforcing uniqueness                       |
+| **Map**   | Key–value association      | Fast lookups by key                        |
+
+Important conceptual differences:
+
+* **List** is index-based
+* **Set** is value-based
+* **Map** is key-based
+
+Choosing the wrong one often leads to:
+
+* Performance problems
+* Complex validation logic
+* Bugs around duplicates
 
 ---
 
@@ -2293,7 +2315,7 @@ Because `Map` stores key-value pairs, not individual elements.
 **Can a Map contain duplicate values?**
 
 ✅ **Answer:**
-Yes — only keys must be unique.
+Yes. Only **keys** must be unique; values can be duplicated freely.
 
 ---
 
@@ -2301,21 +2323,34 @@ Yes — only keys must be unique.
 
 #### 📘 Answer
 
-| Aspect         | ArrayList     | LinkedList           |
-|----------------|---------------|----------------------|
-| Data structure | Dynamic array | Doubly linked list   |
-| Access         | O(1)          | O(n)                 |
-| Insert/Delete  | Costly        | Efficient            |
-| Memory         | Less          | More (node overhead) |
+Although both implement `List`, their **internal data structures** are completely different.
+
+* **ArrayList**
+
+  * Backed by a **dynamic array**
+  * Fast random access (`get(index)` is O(1))
+  * Insert/delete in middle requires shifting elements
+
+* **LinkedList**
+
+  * Backed by a **doubly linked list**
+  * Each element stores references to previous and next
+  * No random access (O(n) traversal)
+
+Real-world implication:
+
+* `ArrayList` is almost always faster due to **CPU cache locality**
+* `LinkedList` rarely outperforms `ArrayList` in practice
 
 ---
 
 #### ⚠️ Tricky Follow-up
 
-**Why is LinkedList rarely used in practice?**
+**Why is LinkedList rarely used in real systems?**
 
 ✅ **Answer:**
-Poor cache locality and higher memory overhead.
+Because pointer-heavy structures perform poorly with modern CPUs due to cache misses, despite better theoretical
+insertion complexity.
 
 ---
 
@@ -2323,11 +2358,21 @@ Poor cache locality and higher memory overhead.
 
 #### 📘 Answer
 
-| Aspect       | HashSet  | TreeSet  |
-|--------------|----------|----------|
-| Ordering     | No       | Sorted   |
-| Performance  | O(1) avg | O(log n) |
-| Null allowed | One      | ❌        |
+The key difference is **ordering vs performance**.
+
+* **HashSet**
+
+  * Backed by a `HashMap`
+  * No ordering guarantee
+  * O(1) average operations
+
+* **TreeSet**
+
+  * Backed by a `TreeMap` (Red-Black Tree)
+  * Always sorted
+  * O(log n) operations
+
+Use TreeSet only when **sorted order is required**, not by default.
 
 ---
 
@@ -2336,7 +2381,8 @@ Poor cache locality and higher memory overhead.
 **How does HashSet ensure uniqueness?**
 
 ✅ **Answer:**
-Uses `hashCode()` and `equals()` internally via `HashMap`.
+Internally, HashSet uses a HashMap where elements are stored as keys. Uniqueness is enforced via `hashCode()` and
+`equals()`.
 
 ---
 
@@ -2348,32 +2394,46 @@ Uses `hashCode()` and `equals()` internally via `HashMap`.
 
 #### 📘 Answer
 
-Java 8+ HashMap internals:
+`HashMap` is one of the **most important classes** to understand deeply.
+
+Internal structure:
+
+* An array of **buckets**
+* Each bucket contains:
+
+  * A linked list (Java ≤7)
+  * Linked list → Red-Black Tree (Java 8+, if bucket grows large)
+
+Insertion flow:
 
 ```
-hash(key)
+key.hashCode()
+   ↓
+hash spreading
    ↓
 index = (n - 1) & hash
    ↓
-bucket
-   ↓
-LinkedList → Tree (if > 8 nodes)
+bucket[index]
 ```
 
-Key points:
+If collisions occur:
 
-* Array of buckets
-* Collisions handled via chaining
-* Converts to Red-Black Tree when bucket size > 8
+* Keys with same bucket index are chained
+* When chain length > 8 → treeified (balanced tree)
+
+This ensures:
+
+* Average O(1) lookup
+* Worst-case O(log n) after Java 8
 
 ---
 
 #### ⚠️ Tricky Follow-up
 
-**Why treeify threshold is 8?**
+**Why was treeification added in Java 8?**
 
 ✅ **Answer:**
-Empirically chosen balance between memory and performance.
+To protect against performance degradation and hash collision attacks.
 
 ---
 
@@ -2381,15 +2441,28 @@ Empirically chosen balance between memory and performance.
 
 #### 📘 Answer
 
-Load factor determines **when resizing occurs**.
+The **load factor** controls the trade-off between:
+
+* Memory usage
+* Performance
 
 Default:
 
 ```java
 capacity = 16
 loadFactor = 0.75
-resize at 12 entries
 ```
+
+Resize happens when:
+
+```
+size > capacity × loadFactor
+```
+
+Resizing is expensive because:
+
+* Entire table must be rehashed
+* All entries redistributed
 
 ---
 
@@ -2398,7 +2471,7 @@ resize at 12 entries
 **What happens during resize?**
 
 ✅ **Answer:**
-Rehashing — expensive O(n) operation.
+All existing entries are rehashed and moved — an O(n) operation.
 
 ---
 
@@ -2406,21 +2479,27 @@ Rehashing — expensive O(n) operation.
 
 #### 📘 Answer
 
-| Aspect      | HashMap | Hashtable |
-|-------------|---------|-----------|
-| Thread-safe | ❌       | ✅         |
-| Performance | Faster  | Slower    |
-| Null key    | One     | ❌         |
-| Legacy      | No      | Yes       |
+`Hashtable` is a **legacy class** from Java 1.0.
+
+Key differences:
+
+* Hashtable synchronizes **every method**
+* HashMap is **not thread-safe**
+* Hashtable does not allow nulls
+
+Modern Java prefers:
+
+* `HashMap` for single-threaded
+* `ConcurrentHashMap` for concurrent access
 
 ---
 
 #### ⚠️ Tricky Follow-up
 
-**Should Hashtable ever be used today?**
+**Why is Hashtable considered obsolete?**
 
 ✅ **Answer:**
-No — use `ConcurrentHashMap`.
+Coarse-grained synchronization causes severe performance bottlenecks.
 
 ---
 
@@ -2428,26 +2507,28 @@ No — use `ConcurrentHashMap`.
 
 #### 📘 Answer
 
-Java 8+ design:
+`ConcurrentHashMap` is designed for **high concurrency with minimal locking**.
 
-* No segment locking
-* Uses CAS + synchronized blocks
-* Lock per bin (not whole map)
+Java 8 design:
 
-Advantages:
+* No segments
+* Uses CAS + synchronized blocks at bucket level
+* Reads are mostly lock-free
 
-* High concurrency
-* No global locking
-* Safe iteration
+Key properties:
+
+* No `ConcurrentModificationException`
+* Weakly consistent iterators
+* High throughput under contention
 
 ---
 
 #### ⚠️ Tricky Follow-up
 
-**Can ConcurrentHashMap store null keys?**
+**Why are null keys/values disallowed?**
 
 ✅ **Answer:**
-No — to avoid ambiguity during concurrent reads.
+To avoid ambiguity between “no mapping” and “mapped to null” in concurrent reads.
 
 ---
 
@@ -2455,24 +2536,28 @@ No — to avoid ambiguity during concurrent reads.
 
 #### 📘 Answer
 
-| Type      | Behavior                                 |
-|-----------|------------------------------------------|
-| Fail-fast | Throws `ConcurrentModificationException` |
-| Fail-safe | Works on snapshot                        |
+* **Fail-fast**
 
-Examples:
+  * Detects concurrent modification
+  * Throws exception immediately
+  * Protects against inconsistent state
 
-* Fail-fast → `ArrayList`
-* Fail-safe → `ConcurrentHashMap`
+* **Fail-safe**
+
+  * Iterates over a snapshot
+  * No exception
+  * May not reflect latest data
+
+Fail-fast helps catch bugs early; fail-safe trades correctness for availability.
 
 ---
 
 #### ⚠️ Tricky Follow-up
 
-**Is fail-safe iteration always safe?**
+**Is fail-safe iteration always correct?**
 
 ✅ **Answer:**
-Safe from exception, but may see stale data.
+No — it may miss updates or show stale data.
 
 ---
 
@@ -2484,25 +2569,27 @@ Safe from exception, but may see stale data.
 
 #### 📘 Answer
 
-Contract:
+Hash-based collections rely on a **two-step lookup**:
 
-* Equal objects → same hashCode
-* Unequal objects → may have same hashCode
+1. Use `hashCode()` to find bucket
+2. Use `equals()` to find exact key
 
-Violation causes:
+If contract is violated:
 
-* Lost entries
-* Infinite loops
-* Lookup failures
+* Objects may become unreachable
+* Lookups may fail
+* Data corruption may occur
+
+This is one of the **most common real-world bugs** in Java systems.
 
 ---
 
 #### ⚠️ Tricky Follow-up
 
-**Can two unequal objects have same hashCode?**
+**Can unequal objects have same hashCode?**
 
 ✅ **Answer:**
-Yes — collisions are allowed.
+Yes — collisions are allowed and expected.
 
 ---
 
@@ -2510,20 +2597,25 @@ Yes — collisions are allowed.
 
 #### 📘 Answer
 
-| Aspect             | unmodifiableList | List.of |
-|--------------------|------------------|---------|
-| Backed by original | ✅                | ❌       |
-| Null allowed       | Yes              | ❌       |
-| Java version       | Older            | Java 9+ |
+* `unmodifiableList()`
+
+  * Returns a **read-only view**
+  * Underlying list can still change
+
+* `List.of()`
+
+  * Creates a **truly immutable list**
+  * No nulls allowed
+  * More memory-efficient
 
 ---
 
 #### ⚠️ Tricky Follow-up
 
-**Can underlying list still change?**
+**Can underlying list still mutate with unmodifiableList?**
 
 ✅ **Answer:**
-Yes — wrapper reflects changes.
+Yes — the wrapper reflects changes.
 
 ---
 
@@ -2531,11 +2623,17 @@ Yes — wrapper reflects changes.
 
 #### 📘 Answer
 
-| Aspect          | Arrays.asList | List.of |
-|-----------------|---------------|---------|
-| Fixed size      | ✅             | ✅       |
-| Backed by array | ✅             | ❌       |
-| Supports set()  | ✅             | ❌       |
+`Arrays.asList()`:
+
+* Fixed-size list
+* Backed by array
+* Structural modification not allowed
+
+`List.of()`:
+
+* Fully immutable
+* No backing array
+* Safer for APIs
 
 ---
 
@@ -2544,7 +2642,7 @@ Yes — wrapper reflects changes.
 **Why does `add()` fail on Arrays.asList()?**
 
 ✅ **Answer:**
-Size is fixed — structural modification not allowed.
+The underlying array size is fixed.
 
 ---
 
@@ -2552,33 +2650,40 @@ Size is fixed — structural modification not allowed.
 
 #### 📘 Answer
 
-* Keys held via **weak references**
-* GC removes entries when key is no longer strongly referenced
+`WeakHashMap` uses **weak references for keys**.
 
-Use cases:
+When a key is no longer strongly referenced:
+
+* GC removes the entry automatically
+
+Useful for:
 
 * Caches
-* Metadata storage
+* Metadata associations
 
 ---
 
 #### ⚠️ Tricky Follow-up
 
-**Does WeakHashMap prevent memory leaks?**
+**Does it guarantee no memory leaks?**
 
 ✅ **Answer:**
-Helps, but not a silver bullet.
+No — values can still strongly reference keys indirectly.
 
 ---
 
-### Q14. What are common collection-related performance mistakes?
+### Q14. Common collection-related performance mistakes.
 
 #### 📘 Answer
 
-* Using LinkedList blindly
-* Poor initial capacity sizing
-* Excessive boxing
+Common mistakes:
+
+* Default LinkedList usage
+* Ignoring initial capacity
+* Excessive autoboxing
 * Using synchronized collections unnecessarily
+
+These issues often appear **only under load**, making them dangerous.
 
 ---
 
@@ -2587,7 +2692,7 @@ Helps, but not a silver bullet.
 **How to size HashMap correctly?**
 
 ✅ **Answer:**
-Initial capacity ≈ expectedSize / loadFactor.
+`initialCapacity ≈ expectedSize / 0.75`
 
 ---
 
@@ -2595,12 +2700,13 @@ Initial capacity ≈ expectedSize / loadFactor.
 
 #### 📘 Answer
 
-Structural modification breaks iterator consistency.
+Concurrent structural modification:
 
-Fail-fast behavior prevents:
+* Breaks iterator assumptions
+* Leads to inconsistent traversal
+* Causes subtle bugs
 
-* Infinite loops
-* Corrupted state
+Fail-fast behavior exists to **fail early and loudly**.
 
 ---
 
@@ -2609,10 +2715,7 @@ Fail-fast behavior prevents:
 **How to modify safely while iterating?**
 
 ✅ **Answer:**
-Use:
-
-* Iterator’s `remove()`
-* Concurrent collections
+Use iterator’s `remove()` or concurrent collections.
 
 ---
 
