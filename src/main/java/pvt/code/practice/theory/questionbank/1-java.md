@@ -2739,8 +2739,8 @@ Use iterator’s `remove()` or concurrent collections.
 
 #### 📘 Answer
 
-A **thread** is the smallest unit of execution within a Java program. A single Java application runs inside a **process
-**, and that process can contain **multiple threads** running at the same time.
+A **thread** is the smallest unit of execution within a Java program. A single Java application runs inside a 
+**process**, and that process can contain **multiple threads** running at the same time.
 
 All threads in a process:
 
@@ -3792,8 +3792,8 @@ work-stealing and can cause thread starvation.
 tasks in the background and **define what should happen when those tasks complete**, without blocking the current
 thread.
 
-Unlike traditional concurrency approaches that rely heavily on blocking calls, `CompletableFuture` encourages a *
-*non-blocking, callback-style** way of writing asynchronous code.
+Unlike traditional concurrency approaches that rely heavily on blocking calls, `CompletableFuture` encourages a 
+**non-blocking, callback-style** way of writing asynchronous code.
 
 #### → Why was `CompletableFuture` introduced?
 
@@ -3887,20 +3887,55 @@ This makes `join()` more convenient in functional-style code.
 
 #### 📘 Answer
 
-Java 8 focused on:
+Java 8 was a major release that aimed to make Java **more expressive, more concise, and better suited for modern
+applications**. Before Java 8, Java code was often verbose, especially when working with collections, concurrency, and
+callbacks.
 
-* Functional programming support
-* Better collection processing
-* Backward compatibility
-* Improved concurrency
+The primary goals of Java 8 were:
 
-Key additions:
+1. **Introduce functional programming concepts**
+   Java wanted to allow developers to pass behavior (logic) as data. This made code easier to write, read, and reason
+   about, especially for collection processing and asynchronous workflows.
 
-* Lambda expressions
-* Streams
-* Functional interfaces
-* Optional
-* New Date-Time API
+2. **Improve collection processing**
+   Operations like filtering, mapping, and aggregating data required a lot of boilerplate code before Java 8. Java 8
+   introduced the Stream API to express these operations in a clean and declarative way.
+
+3. **Enable better use of multi-core processors**
+   With parallel streams and improved concurrency APIs, Java 8 made it easier to write code that can take advantage of
+   multiple CPU cores.
+
+4. **Maintain backward compatibility**
+   A key challenge was adding new features without breaking existing code. Java 8 achieved this using concepts like
+   default methods in interfaces.
+
+#### → A simple example of the motivation
+
+Before Java 8:
+
+```java
+List<Integer> result = new ArrayList<>();
+for (Integer i : list) {
+    if (i > 10) {
+        result.add(i * 2);
+    }
+}
+```
+
+With Java 8:
+
+```java
+List<Integer> result = list.stream()
+        .filter(i -> i > 10)
+        .map(i -> i * 2)
+        .toList();
+```
+
+The Java 8 version:
+
+* Is shorter
+* Expresses *what* is being done, not *how*
+* Is easier to read and modify
 
 ---
 
@@ -3909,7 +3944,8 @@ Key additions:
 **Did Java 8 break backward compatibility?**
 
 ✅ **Answer:**
-No — default methods were added specifically to avoid breaking existing interfaces.
+No. Java 8 was designed to be backward compatible. Features like default methods in interfaces were introduced
+specifically so existing implementations would not break when new methods were added.
 
 ---
 
@@ -3917,21 +3953,93 @@ No — default methods were added specifically to avoid breaking existing interf
 
 #### 📘 Answer
 
-A lambda is a **compact representation of a function**.
+A **lambda expression** in Java is a concise way to represent a **piece of executable logic**. Instead of writing a full
+class or anonymous inner class, a lambda lets you express the same behavior in a much shorter and clearer form.
+
+In simple terms, a lambda expression allows you to:
+
+* Treat behavior as data
+* Pass logic as a method argument
+* Write less boilerplate code
+
+#### → Why were lambda expressions introduced?
+
+Before Java 8, passing behavior usually meant writing an anonymous class, which was verbose and harder to read.
+
+Example (before Java 8):
 
 ```java
-(a,b) -> a + b
+Runnable task = new Runnable() {
+    @Override
+    public void run() {
+        System.out.println("Running task");
+    }
+};
 ```
 
-Equivalent to:
+With Java 8:
 
 ```java
-new Comparator<Integer>() {
-    public int compare(Integer a, Integer b) {
-        return a - b;
-    }
+Runnable task = () -> System.out.println("Running task");
+```
+
+Both do the same thing, but the lambda version is:
+
+* Shorter
+* Easier to understand
+* Focused on the logic, not the structure
+
+#### → Basic structure of a lambda expression
+
+A lambda expression has three parts:
+
+```java
+(parameters) -> expression
+```
+
+Or, if the logic is more complex:
+
+```java
+(parameters) -> {
+    // multiple statements
 }
 ```
+
+For example:
+
+```java
+(a, b) -> a + b
+```
+
+This represents a function that takes two arguments and returns their sum.
+
+#### → Where can lambdas be used?
+
+Lambdas can be used **only with functional interfaces** — interfaces that have exactly one abstract method.
+
+Common examples include:
+
+* `Runnable`
+* `Comparator`
+* `Callable`
+* `Function`
+
+Example with `Comparator`:
+
+```java
+Comparator<Integer> comparator = (a, b) -> a - b;
+```
+
+#### → What problem do lambdas solve?
+
+Lambdas:
+
+* Reduce boilerplate code
+* Improve readability
+* Make APIs like Streams and `CompletableFuture` possible
+* Encourage a more declarative programming style
+
+They do not replace object-oriented programming, but **complement it**.
 
 ---
 
@@ -3940,7 +4048,8 @@ new Comparator<Integer>() {
 **Can lambdas access local variables?**
 
 ✅ **Answer:**
-Yes — but variables must be **effectively final**.
+Yes, but only if the local variables are **effectively final**. This means their value is not changed after
+initialization.
 
 ---
 
@@ -3948,20 +4057,99 @@ Yes — but variables must be **effectively final**.
 
 #### 📘 Answer
 
-A functional interface has **exactly one abstract method**.
+A **functional interface** in Java is an interface that has **exactly one abstract method**. This single abstract method
+represents a **unit of behavior**, which can be implemented using a lambda expression.
 
-Examples:
+In simple terms, a functional interface acts as a **target type for a lambda**. Without functional interfaces, lambda
+expressions would not be possible in Java.
 
-* `Runnable`
-* `Callable`
-* `Comparator`
-* `Function`
+#### → Why are functional interfaces important?
 
-Annotation:
+Java is an object-oriented language, and it expects behavior to be represented by objects. Functional interfaces bridge
+the gap between:
+
+* Object-oriented design
+* Functional-style programming introduced in Java 8
+
+They allow Java to treat behavior (logic) as something that can be:
+
+* Passed around
+* Stored in variables
+* Executed later
+
+#### → A simple example
+
+Consider the `Runnable` interface:
 
 ```java
 @FunctionalInterface
+public interface Runnable {
+    void run();
+}
 ```
+
+It has exactly one abstract method: `run()`.
+
+This is why we can write:
+
+```java
+Runnable task = () -> System.out.println("Running task");
+```
+
+The lambda provides the implementation of the `run()` method.
+
+#### → The `@FunctionalInterface` annotation
+
+Java provides the `@FunctionalInterface` annotation to:
+
+* Explicitly declare your intent
+* Let the compiler enforce the “single abstract method” rule
+
+Example:
+
+```java
+@FunctionalInterface
+interface Calculator {
+    int add(int a, int b);
+}
+```
+
+If you accidentally add another abstract method, the compiler will throw an error.
+
+#### → Can functional interfaces have other methods?
+
+Yes. A functional interface can still have:
+
+* **Default methods**
+* **Static methods**
+
+These do **not** count as abstract methods.
+
+Example:
+
+```java
+@FunctionalInterface
+interface Printer {
+    void print(String msg);
+
+    default void printUpper(String msg) {
+        System.out.println(msg.toUpperCase());
+    }
+}
+```
+
+This is still a valid functional interface because it has only one abstract method.
+
+#### → Common functional interfaces in Java
+
+Java provides many built-in functional interfaces in `java.util.function`, such as:
+
+* `Function<T, R>`
+* `Predicate<T>`
+* `Consumer<T>`
+* `Supplier<T>`
+
+These are heavily used in Streams and asynchronous APIs.
 
 ---
 
@@ -3970,7 +4158,8 @@ Annotation:
 **Can a functional interface have default methods?**
 
 ✅ **Answer:**
-Yes — only abstract methods are counted.
+Yes. A functional interface can have default and static methods. Only abstract methods are counted when determining
+whether an interface is functional.
 
 ---
 
@@ -3982,19 +4171,106 @@ Yes — only abstract methods are counted.
 
 #### 📘 Answer
 
-Streams provide **declarative data processing**.
+The **Stream API** in Java provides a way to **process collections of data in a declarative and readable manner**.
+Instead of writing loops and managing temporary variables, streams allow you to describe **what you want to do with the
+data**, not how to do it step by step.
 
-Pipeline:
+A stream is **not a data structure**. It does not store data. Instead, it represents a **pipeline of operations** that
+process data from a source such as a collection, an array, or an I/O channel.
 
+#### → Why was the Stream API introduced?
+
+Before Java 8, working with collections often required:
+
+* Explicit loops
+* Temporary collections
+* Complex nested logic
+
+This made code verbose and harder to maintain.
+
+The Stream API was introduced to:
+
+* Reduce boilerplate code
+* Improve readability
+* Encourage a functional style of programming
+* Make it easier to process data in bulk
+
+#### → A simple example
+
+Before Streams:
+
+```java
+List<String> result = new ArrayList<>();
+for (String name : names) {
+    if (name.startsWith("A")) {
+        result.add(name.toUpperCase());
+    }
+}
 ```
-Source → Intermediate Ops → Terminal Op
+
+Using Streams:
+
+```java
+List<String> result = names.stream()
+        .filter(name -> name.startsWith("A"))
+        .map(String::toUpperCase)
+        .toList();
 ```
+
+The stream version:
+
+* Reads like a sentence
+* Is easier to modify
+* Avoids temporary variables
+
+#### → How a stream works (conceptually)
+
+A stream pipeline has three parts:
+
+1. **Source**
+   Where the data comes from (e.g., a list or array)
+
+2. **Intermediate operations**
+   Operations like `filter`, `map`, and `sorted` that transform the stream
+
+3. **Terminal operation**
+   An operation like `forEach`, `collect`, or `toList` that triggers execution
 
 Example:
 
 ```java
-list.stream().filter(x -> x > 10).map(x -> x * 2).collect(toList());
+names.stream()
+     .filter(...)
+     .map(...)
+     .toList();
 ```
+
+Until the terminal operation is called, **nothing is executed**.
+
+#### → Important characteristics of streams
+
+* **Streams are lazy**
+  Intermediate operations do not run until a terminal operation is invoked.
+
+* **Streams do not modify the source**
+  The original collection remains unchanged unless explicitly modified.
+
+* **Streams are single-use**
+  Once a stream is consumed, it cannot be reused.
+
+#### → When to use Streams
+
+Streams are ideal when:
+
+* You are transforming or filtering data
+* You want readable, expressive code
+* You are processing collections in bulk
+
+They are not always the best choice for:
+
+* Very simple loops
+* Performance-critical sections where clarity matters more than style
+* Complex stateful logic
 
 ---
 
@@ -4003,7 +4279,7 @@ list.stream().filter(x -> x > 10).map(x -> x * 2).collect(toList());
 **Are streams data structures?**
 
 ✅ **Answer:**
-No — they don’t store data.
+No. Streams do not store data. They are a way to process data from a source through a sequence of operations.
 
 ---
 
@@ -4011,20 +4287,52 @@ No — they don’t store data.
 
 #### 📘 Answer
 
-| Intermediate   | Terminal         |
-|----------------|------------------|
-| Lazy           | Eager            |
-| Returns Stream | Produces result  |
-| filter, map    | collect, forEach |
+In the Stream API, operations are divided into **intermediate operations** and **terminal operations**, and
+understanding this distinction is essential to understanding how streams actually work.
+
+An **intermediate operation** transforms a stream into another stream. It does not produce a final result and **does not
+execute immediately**.
+
+Examples of intermediate operations include:
+
+* `filter()`
+* `map()`
+* `sorted()`
+
+A **terminal operation**, on the other hand, produces a final result or side effect and **triggers the execution of the
+entire stream pipeline**.
+
+Examples of terminal operations include:
+
+* `forEach()`
+* `collect()`
+* `toList()`
+* `findFirst()`
+
+Example:
+
+```java
+names.stream()
+     .filter(name -> name.length() > 3)   // intermediate
+     .map(String::toUpperCase)            // intermediate
+     .toList();                           // terminal
+```
+
+In this example:
+
+* The `filter` and `map` steps are not executed immediately
+* Execution starts only when `toList()` is called
+
+This design allows Java to optimize execution and avoid unnecessary work.
 
 ---
 
 #### ⚠️ Tricky Follow-up
 
-**Can you reuse a stream?**
+**Can you reuse a stream after a terminal operation?**
 
 ✅ **Answer:**
-No — streams are single-use.
+No. Once a terminal operation is executed, the stream is considered consumed and cannot be reused.
 
 ---
 
@@ -4032,21 +4340,53 @@ No — streams are single-use.
 
 #### 📘 Answer
 
-Intermediate operations execute **only when a terminal operation is invoked**.
+**Lazy evaluation** means that stream operations are **not executed immediately** when they are defined. Instead, they
+are executed only when a terminal operation is invoked.
 
-This allows:
+This allows Java to:
 
-* Short-circuiting
-* Performance optimizations
+* Process only the required elements
+* Stop execution early when possible
+* Improve performance for large datasets
+
+Example:
+
+```java
+names.stream()
+     .filter(name -> {
+         System.out.println("Filtering " + name);
+         return name.startsWith("A");
+     });
+```
+
+In this code, **nothing happens** because there is no terminal operation.
+
+Now add a terminal operation:
+
+```java
+names.stream()
+     .filter(name -> {
+         System.out.println("Filtering " + name);
+         return name.startsWith("A");
+     })
+     .findFirst();
+```
+
+Here:
+
+* Elements are processed one by one
+* The stream stops as soon as the first match is found
+
+Lazy evaluation is what makes stream pipelines efficient and expressive.
 
 ---
 
 #### ⚠️ Tricky Follow-up
 
-**How does `findFirst()` behave?**
+**How does `findFirst()` behave in a stream?**
 
 ✅ **Answer:**
-Stops processing once a match is found.
+`findFirst()` stops processing as soon as the first matching element is found, thanks to lazy evaluation.
 
 ---
 
@@ -4054,16 +4394,45 @@ Stops processing once a match is found.
 
 #### 📘 Answer
 
-`Optional` is a container to represent **presence or absence** of a value.
+`Optional` is a container object used to represent a value that **may or may not be present**. It was introduced to
+reduce the risk of `NullPointerException` and to make the absence of a value **explicit in the API**.
+
+Before `Optional`, methods often returned `null`, which forced callers to remember to add null checks. Forgetting these
+checks led to runtime exceptions.
+
+Example without `Optional`:
 
 ```java
-Optional<User> user;
+User user = findUser(id);
+if (user != null) {
+    process(user);
+}
 ```
 
-Purpose:
+With `Optional`:
 
-* Avoid NullPointerException
-* Make nullability explicit
+```java
+Optional<User> user = findUser(id);
+user.ifPresent(this::process);
+```
+
+This makes it clear that:
+
+* The value might be absent
+* The caller must handle that case consciously
+
+#### → When should `Optional` be used?
+
+`Optional` is best used:
+
+* As a **return type** from methods
+* To clearly signal “value may be missing”
+
+It is **not recommended** for:
+
+* Fields
+* Method parameters
+* Serialization
 
 ---
 
@@ -4072,24 +4441,45 @@ Purpose:
 **Should Optional be used as method parameters?**
 
 ✅ **Answer:**
-No — it complicates APIs.
+No. Using `Optional` as a parameter complicates APIs and does not provide much benefit. It is intended mainly for return
+values.
 
 ---
 
-### Q8. Common Optional pitfalls?
+### Q8. Common `Optional` pitfalls.
 
 #### 📘 Answer
 
-❌ Anti-patterns:
+While `Optional` is useful, it can be misused if not understood properly.
 
-* `Optional.get()` without check
-* Using Optional in fields
-* Wrapping null in Optional
+A common mistake is calling `get()` without checking whether a value is present:
 
-✅ Prefer:
+```java
+optional.get(); // can throw NoSuchElementException
+```
 
-* `orElseGet`
-* `ifPresent`
+This defeats the purpose of using `Optional`.
+
+Another common issue is using `Optional` as a replacement for all null checks, including:
+
+* Fields
+* Class members
+* DTOs
+
+Better ways to work with `Optional` include:
+
+* `ifPresent()`
+* `orElse()`
+* `orElseGet()`
+* `orElseThrow()`
+
+Example:
+
+```java
+User user = optional.orElseGet(this::createDefaultUser);
+```
+
+This leads to clearer and safer code.
 
 ---
 
@@ -4098,11 +4488,8 @@ No — it complicates APIs.
 **Difference between `orElse()` and `orElseGet()`?**
 
 ✅ **Answer:**
-`orElse()` eagerly evaluates; `orElseGet()` is lazy.
-
----
-
-## 🔴 HARD QUESTIONS
+`orElse()` always evaluates its argument, even if the value is present.
+`orElseGet()` evaluates its supplier only when the value is absent, making it more efficient in some cases.
 
 ---
 
@@ -4110,26 +4497,40 @@ No — it complicates APIs.
 
 #### 📘 Answer
 
-Parallel streams use:
+A **parallel stream** allows stream operations to be executed **in parallel across multiple threads**, making use of
+multiple CPU cores.
 
-* ForkJoinPool
-* Work-stealing algorithm
+You can create a parallel stream by calling:
 
 ```java
-list.parallelStream()
+list.parallelStream();
 ```
+
+Internally, parallel streams use the **ForkJoin framework** to split work into smaller tasks and execute them
+concurrently.
+
+Parallel streams can improve performance for:
+
+* Large datasets
+* CPU-intensive operations
+
+However, they also come with important considerations:
+
+* Order of execution is not guaranteed
+* Shared mutable state can cause bugs
+* They use a common thread pool shared by the JVM
+
+Because of this, parallel streams should be used **carefully and deliberately**, not by default.
 
 ---
 
 #### ⚠️ Tricky Follow-up
 
-**Why are parallel streams dangerous?**
+**Why are parallel streams considered dangerous?**
 
 ✅ **Answer:**
-
-* Shared thread pool
-* Blocking tasks kill performance
-* Non-deterministic ordering
+Because they use a shared thread pool, can introduce concurrency bugs when shared mutable state is involved, and may
+actually degrade performance if used for small or I/O-bound tasks.
 
 ---
 
@@ -4137,12 +4538,28 @@ list.parallelStream()
 
 #### 📘 Answer
 
-Avoid streams when:
+Although the Stream API is powerful and expressive, it is **not the right tool for every situation**. Streams are
+designed for **data transformation and bulk operations**, not for all kinds of logic.
 
-* Simple loops are clearer
-* Debugging is critical
-* Heavy mutation required
-* Low-latency code paths
+You should avoid using streams when:
+
+* The logic is very simple and a plain loop is clearer
+* You need complex control flow (break, continue, nested conditions)
+* You are heavily mutating shared state
+* You are in performance-critical sections where streams add overhead
+
+For example, a simple loop like this:
+
+```java
+for (int i = 0; i < list.size(); i++) {
+    sum += list.get(i);
+}
+```
+
+may be clearer and faster than a stream version in some cases.
+
+Streams are best used when they **improve readability and intent**. If a stream makes the code harder to understand,
+it’s usually a sign that a loop is the better choice.
 
 ---
 
@@ -4151,7 +4568,8 @@ Avoid streams when:
 **Are streams always slower than loops?**
 
 ✅ **Answer:**
-Not always — depends on workload.
+No. Streams can be just as fast or sometimes faster, especially for large datasets. Performance depends on the use case,
+not the API itself.
 
 ---
 
@@ -4159,17 +4577,33 @@ Not always — depends on workload.
 
 #### 📘 Answer
 
-Method reference is a **syntactic sugar**.
+A **method reference** is a shorthand form of a lambda expression that simply calls an existing method. It improves *
+*readability**, but does not change behavior or performance.
+
+Example using a lambda:
+
+```java
+list.forEach(item -> System.out.println(item));
+```
+
+The same logic using a method reference:
 
 ```java
 list.forEach(System.out::println);
 ```
 
-Types:
+Both versions do exactly the same thing.
 
-* Static
-* Instance
-* Constructor
+Method references are useful when:
+
+* The lambda only calls a single method
+* The intent becomes clearer by removing boilerplate
+
+They come in a few common forms:
+
+* Reference to a static method
+* Reference to an instance method
+* Reference to a constructor
 
 ---
 
@@ -4178,7 +4612,8 @@ Types:
 **Do method references have performance benefits?**
 
 ✅ **Answer:**
-No — readability only.
+No. Method references are only syntactic sugar. They do not improve performance compared to equivalent lambda
+expressions.
 
 ---
 
@@ -4186,23 +4621,40 @@ No — readability only.
 
 #### 📘 Answer
 
-Purpose:
+**Default methods** were introduced in Java 8 to allow interfaces to include method implementations. The main motivation
+was **backward compatibility**.
 
-* Backward compatibility
+Before Java 8, adding a new method to an interface would break all existing implementations. Default methods solved this
+problem by allowing interfaces to provide a default implementation.
 
-Risks:
+Example:
 
-* Diamond ambiguity
-* Breaking encapsulation
+```java
+interface Vehicle {
+    default void start() {
+        System.out.println("Vehicle starting");
+    }
+}
+```
+
+Now, existing classes implementing `Vehicle` do not need to implement `start()`.
+
+However, default methods come with risks:
+
+* They blur the line between interfaces and abstract classes
+* They can introduce ambiguity when multiple interfaces define the same default method
+* Overusing them can lead to poor design
+
+Default methods should be used **sparingly**, mainly for API evolution.
 
 ---
 
 #### ⚠️ Tricky Follow-up
 
-**How to resolve default method conflict?**
+**How do you resolve default method conflicts?**
 
 ✅ **Answer:**
-Explicit override in implementing class.
+By explicitly overriding the method in the implementing class and choosing the desired implementation.
 
 ---
 
@@ -4210,22 +4662,31 @@ Explicit override in implementing class.
 
 #### 📘 Answer
 
-Problems with old API:
+The old date-time APIs (`Date`, `Calendar`) were difficult to use, mutable, and not thread-safe. To address these
+problems, Java 8 introduced the **`java.time` API**, inspired by Joda-Time.
 
-* Mutable
-* Not thread-safe
-
-New API:
+The new API is:
 
 * Immutable
-* Fluent
 * Thread-safe
+* Clear and well-structured
 
-Examples:
+Common classes include:
 
-* `LocalDate`
-* `Instant`
-* `ZonedDateTime`
+* `LocalDate` – date without time
+* `LocalTime` – time without date
+* `LocalDateTime` – date and time
+* `Instant` – timestamp in UTC
+* `ZonedDateTime` – date and time with timezone
+
+Example:
+
+```java
+LocalDate today = LocalDate.now();
+LocalDate tomorrow = today.plusDays(1);
+```
+
+Because objects are immutable, operations like `plusDays()` return new instances instead of modifying existing ones.
 
 ---
 
@@ -4234,7 +4695,8 @@ Examples:
 **Difference between `Instant` and `LocalDateTime`?**
 
 ✅ **Answer:**
-`Instant` is UTC-based; `LocalDateTime` has no timezone.
+`Instant` represents a moment on the global timeline (UTC), while `LocalDateTime` represents a date and time without any
+timezone information.
 
 ---
 
@@ -4242,22 +4704,40 @@ Examples:
 
 #### 📘 Answer
 
-Allows non-blocking composition.
+`CompletableFuture` chaining allows you to **define a sequence of asynchronous steps**, where each step runs after the
+previous one completes.
+
+Instead of blocking and waiting for results, you describe **what should happen next**.
+
+Example:
 
 ```java
-cf.thenApply().thenCompose().thenAccept();
+CompletableFuture.supplyAsync(() -> "Hello")
+        .thenApply(result -> result + " World")
+        .thenAccept(System.out::println);
 ```
+
+Here:
+
+* The first task runs asynchronously
+* The second step transforms the result
+* The final step consumes the output
+
+Chaining makes asynchronous code:
+
+* Easier to read
+* Easier to compose
+* Less dependent on blocking calls
 
 ---
 
 #### ⚠️ Tricky Follow-up
 
-**Difference between `thenApply` and `thenCompose`?**
+**Difference between `thenApply()` and `thenCompose()`?**
 
 ✅ **Answer:**
-
-* `thenApply` → map
-* `thenCompose` → flatMap
+`thenApply()` transforms a result, while `thenCompose()` is used when the next step itself returns another
+`CompletableFuture`, allowing you to flatten asynchronous operations.
 
 ---
 
@@ -4265,12 +4745,23 @@ cf.thenApply().thenCompose().thenAccept();
 
 #### 📘 Answer
 
-Highlights:
+After Java 8, Java moved to a **time-based release model**, delivering frequent updates with smaller, focused features.
 
-* Java 9: Modules
-* Java 11: LTS, HTTP client
-* Java 17: LTS, records, sealed classes
-* Java 21: Virtual threads (preview → GA)
+Some important milestones include:
+
+* **Java 9**: Module system (strong encapsulation)
+* **Java 11**: Long-term support (LTS), cleaner APIs
+* **Java 17**: LTS, records, sealed classes
+* **Java 21**: Virtual threads and modern concurrency improvements
+
+The key takeaway is that modern Java:
+
+* Encourages immutability
+* Improves concurrency support
+* Reduces boilerplate
+* Focuses on performance and maintainability
+
+For production systems, teams typically adopt **LTS versions** to balance stability and new features.
 
 ---
 
@@ -4279,7 +4770,8 @@ Highlights:
 **Should teams always upgrade Java versions?**
 
 ✅ **Answer:**
-Yes — but align with LTS versions.
+Yes, but preferably by moving between LTS versions. This provides access to improvements while maintaining long-term
+stability.
 
 ---
 
