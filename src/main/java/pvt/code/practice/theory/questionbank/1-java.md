@@ -793,7 +793,7 @@ Annotations are preferred now, but marker interfaces allow `instanceof` checks.
 
 ---
 
-## 🔴 HARD / SENIOR-LEVEL QUESTIONS
+## 🔴 HARD QUESTIONS
 
 ---
 
@@ -1228,7 +1228,7 @@ Heap (since Java 7).
 
 ---
 
-## 🔴 HARD / SENIOR-LEVEL QUESTIONS
+## 🔴 HARD QUESTIONS
 
 ---
 
@@ -1587,7 +1587,7 @@ Only if still in scope and referenced.
 
 ---
 
-## 🔴 HARD / SENIOR-LEVEL QUESTIONS
+## 🔴 HARD QUESTIONS
 
 ---
 
@@ -2064,7 +2064,7 @@ No — both propagate unless caught.
 
 ---
 
-## 🔴 HARD / SENIOR-LEVEL QUESTIONS
+## 🔴 HARD QUESTIONS
 
 ---
 
@@ -2561,7 +2561,7 @@ No — it may miss updates or show stale data.
 
 ---
 
-## 🔴 HARD / SENIOR-LEVEL QUESTIONS
+## 🔴 HARD QUESTIONS
 
 ---
 
@@ -2739,29 +2739,32 @@ Use iterator’s `remove()` or concurrent collections.
 
 #### 📘 Answer
 
-A **thread** is the smallest unit of execution within a Java process.
-While a **process** has its own memory space, **threads share the same heap memory** but have their own stack.
+A **thread** is the smallest unit of execution within a Java program. A single Java application runs inside a **process
+**, and that process can contain **multiple threads** running at the same time.
 
-Why multithreading exists:
+All threads in a process:
 
-* Modern CPUs are multi-core
-* Waiting on I/O wastes CPU cycles
-* Applications must remain responsive
+* Share the same heap memory
+* Have their own call stack
+* Execute independently
 
-Multithreading enables:
+Multithreading exists because modern applications need to do **more than one thing at a time**. Without multithreading:
 
-* **Parallelism** → multiple cores doing work simultaneously
-* **Concurrency** → overlapping tasks (CPU + I/O)
-* **Responsiveness** → UI / request threads don’t block
+* A slow operation (like file or network access) would block the entire program
+* CPU cores would remain underutilized
+* Applications would feel slow or unresponsive
 
-Conceptually:
+For example:
 
-```
-Process
- ├── Thread A (stack A)
- ├── Thread B (stack B)
- └── Shared Heap
-```
+* A web server handles many user requests at the same time
+* A UI application must remain responsive while doing background work
+* A backend service may process I/O and CPU work concurrently
+
+Multithreading allows Java programs to:
+
+* Use multiple CPU cores efficiently
+* Perform background work without blocking main logic
+* Build scalable and responsive systems
 
 ---
 
@@ -2770,12 +2773,8 @@ Process
 **Does multithreading always improve performance?**
 
 ✅ **Answer:**
-No. Poorly designed multithreading can:
-
-* Increase context switching
-* Cause lock contention
-* Reduce cache locality
-  Performance improves only when concurrency matches workload.
+No. Multithreading helps only when tasks can run independently. Poorly designed multithreading can increase context
+switching, cause lock contention, and actually reduce performance.
 
 ---
 
@@ -2783,23 +2782,29 @@ No. Poorly designed multithreading can:
 
 #### 📘 Answer
 
-Java threads move through well-defined states:
+A thread in Java goes through a **well-defined lifecycle**, from creation to termination. Understanding this lifecycle
+helps in debugging and reasoning about thread behavior.
 
-```
-NEW
- ↓ start()
-RUNNABLE  ← (ready or running)
- ↓
-BLOCKED / WAITING / TIMED_WAITING
- ↓
-TERMINATED
-```
+The main states are:
 
-Important clarifications:
+* **NEW**
+  The thread is created but not started yet.
 
-* **RUNNABLE** includes both “ready” and “running”
-* JVM does not expose a RUNNING state
-* Scheduling is OS-controlled, not JVM-controlled
+* **RUNNABLE**
+  The thread is ready to run or is currently running. Java does not distinguish between “ready” and “running”.
+
+* **BLOCKED**
+  The thread is waiting to acquire a lock held by another thread.
+
+* **WAITING / TIMED_WAITING**
+  The thread is waiting for another thread to perform an action (like `notify()`), or waiting for a specified amount of
+  time.
+
+* **TERMINATED**
+  The thread has finished execution.
+
+A key point to remember is that **thread scheduling is controlled by the operating system**, not by Java code. This is
+why thread execution order cannot be reliably predicted.
 
 ---
 
@@ -2808,7 +2813,7 @@ Important clarifications:
 **Is RUNNING a separate state in Java?**
 
 ✅ **Answer:**
-No. JVM merges RUNNING and READY into RUNNABLE.
+No. Java combines “ready to run” and “running” into a single state called RUNNABLE.
 
 ---
 
@@ -2816,23 +2821,28 @@ No. JVM merges RUNNING and READY into RUNNABLE.
 
 #### 📘 Answer
 
-This is a **design question**, not a syntax one.
+The difference between `Thread` and `Runnable` is mainly about **design and responsibility**.
 
-* `Thread` represents **execution**
-* `Runnable` represents **task**
+* `Thread` represents a **thread of execution**
+* `Runnable` represents a **unit of work**
 
-Using Runnable:
+When you extend `Thread`, your class becomes tightly coupled to thread management. This is usually not ideal because
+Java allows only single inheritance.
 
-* Enables separation of concern
-* Allows class inheritance (Java has single inheritance)
-* Improves testability
+Using `Runnable` is preferred because:
+
+* Your class can still extend another class
+* Task logic is separated from execution logic
+* The same task can be reused with different execution strategies
 
 Example:
 
 ```java
-Runnable task = () -> doWork();
+Runnable task = () -> System.out.println("Running task");
 new Thread(task).start();
 ```
+
+Here, the task is independent of how it is executed.
 
 ---
 
@@ -2841,7 +2851,7 @@ new Thread(task).start();
 **Can Runnable return a value?**
 
 ✅ **Answer:**
-No. For returning values or exceptions, use `Callable`.
+No. `Runnable` cannot return a value or throw checked exceptions. For that, Java provides `Callable`.
 
 ---
 
@@ -2849,19 +2859,27 @@ No. For returning values or exceptions, use `Callable`.
 
 #### 📘 Answer
 
-`Callable` was introduced to fix limitations of Runnable.
+`Callable` was introduced to address the limitations of `Runnable`.
 
-|    Aspect    | Runnable |    Callable     |
-|:------------:|:--------:|:---------------:|
-| Return value |    ❌    |       ✅        |
-|  Exception   |    ❌    | Checked allowed |
-|  Execution   |  Thread  | ExecutorService |
+The key differences are:
 
-Callable integrates with `Future`, enabling:
+* `Callable` can return a result
+* `Callable` can throw checked exceptions
+* `Runnable` cannot do either
 
-* Result retrieval
-* Cancellation
-* Timeout handling
+Example:
+
+```java
+Callable<Integer> task = () -> 10;
+```
+
+When a `Callable` is submitted to an executor, it returns a `Future`, which can be used to:
+
+* Retrieve the result
+* Check if the task is complete
+* Cancel the task
+
+This makes `Callable` more suitable for real-world asynchronous computations where results and error handling matter.
 
 ---
 
@@ -2870,7 +2888,7 @@ Callable integrates with `Future`, enabling:
 **How do you get result from Callable?**
 
 ✅ **Answer:**
-Via `Future.get()`.
+By calling `Future.get()` on the object returned when the task is submitted.
 
 ---
 
@@ -2882,17 +2900,32 @@ Via `Future.get()`.
 
 #### 📘 Answer
 
-Synchronization ensures **correctness in concurrent execution** by enforcing:
+Synchronization in Java is a mechanism used to **control access to shared resources** in a multithreaded environment.
 
-* **Mutual exclusion** → only one thread executes critical section
-* **Visibility** → changes are visible across threads
-* **Ordering** → prevents instruction reordering
+When multiple threads access and modify shared data without synchronization:
 
-Without synchronization:
+* Race conditions occur
+* Data becomes inconsistent
+* Bugs appear randomly and are hard to reproduce
 
-* Race conditions
-* Data corruption
-* Non-deterministic bugs
+Synchronization solves this by ensuring that:
+
+* Only one thread executes critical code at a time
+* Changes made by one thread are visible to others
+* Operations occur in a predictable order
+
+Example:
+
+```java
+synchronized (lock) {
+    // critical section
+}
+```
+
+Here, only one thread can enter the synchronized block at a time for the same lock object.
+
+Synchronization is essential whenever **multiple threads modify shared mutable state**. Without it, even simple programs
+can behave incorrectly under concurrency.
 
 ---
 
@@ -2901,7 +2934,7 @@ Without synchronization:
 **What exactly does synchronized lock?**
 
 ✅ **Answer:**
-An object’s **monitor** (intrinsic lock), not the code.
+It locks the **monitor associated with an object**. The lock is tied to the object, not to the code or method itself.
 
 ---
 
@@ -2909,26 +2942,49 @@ An object’s **monitor** (intrinsic lock), not the code.
 
 #### 📘 Answer
 
-* **Synchronized method**
+The core difference between a synchronized method and a synchronized block in Java lies in their scope and flexibility
+in controlling access to shared resources.
 
-  * Locks entire method
-  * Coarse-grained
-* **Synchronized block**
+**Synchronized Method**
 
-  * Locks specific object
-  * Fine-grained and preferred
+A synchronized method locks the entire method body. When you mark a method as `synchronized`, it acquires a lock for
+the entire object (for non-static methods) or the class (for static methods) the moment any thread calls that
+method.
 
-Example:
+* **Syntax**:
 
 ```java
-synchronized (lock) {
-    criticalSection();
+public synchronized void methodName() {
+  // Code to be synchronized
 }
 ```
 
-Granularity matters:
+* **Lock Scope**: The entire method's code is protected. Only one thread can execute this specific method (or any other
+  synchronized method on the same object) at a time.
+* **Best For**: Scenarios where the entire method contributes to the modification or access of shared state and needs
+  protection from concurrent access.
 
-* Smaller lock scope → better scalability
+**Synchronized Block**
+
+A synchronized block, on the other hand, allows for more granular control. You can specify a particular block of
+code within a method that requires synchronization, and you must explicitly provide an object to lock on.
+
+* **Syntax**:
+
+```java
+public void anotherMethod() {
+  // Code that does not need synchronization
+  synchronized (this) { // or any other object reference
+    // Code that needs synchronization
+  }
+}
+```
+
+* **Lock Scope**: Only the code within the block is protected. Other parts of the method (outside the block) can be executed
+  concurrently by different threads. The object specified in the parentheses (this in the example) acts as the mutex (
+  mutual exclusion lock).
+* **Best For**: Optimizing performance by only locking the critical section that accesses shared data, allowing other,
+  non-shared resource operations to run concurrently
 
 ---
 
@@ -2945,23 +3001,63 @@ Yes — `synchronized(this)` locks the current object.
 
 #### 📘 Answer
 
-`volatile` solves **visibility**, not mutual exclusion.
+In Java, `volatile` and `synchronized` are both used in multithreaded programs, but they solve **different problems**.
 
-Guarantees:
+The main purpose of `volatile` is to ensure **visibility of changes** across threads. When a variable is declared as
+`volatile`, it tells the JVM that this variable may be accessed by multiple threads, and that **any update made by one
+thread should be immediately visible to all other threads**.
 
-* Writes go directly to main memory
-* Reads always see latest value
-* Prevents instruction reordering
+For example:
 
-Does NOT guarantee:
+```java
+volatile boolean running = true;
+```
 
-* Atomicity (except single reads/writes)
+If one thread changes `running` to `false`, another thread reading this variable will always see the latest value.
+Without `volatile`, the reading thread might keep using an outdated value, causing bugs like infinite loops.
 
-Use cases:
+However, `volatile` **does not provide mutual exclusion**. It does not stop multiple threads from accessing or modifying
+the variable at the same time. This means `volatile` is suitable only when:
 
-* Flags
-* Status variables
-* One-writer, many-reader scenarios
+* One thread writes
+* Other threads only read
+* No complex state changes are involved
+
+Now consider this example:
+
+```java
+volatile int count = 0;
+count++;
+```
+
+Even though `count` is volatile, this code is **not thread-safe**. That’s because `count++` is not a single operation —
+it involves reading the value, incrementing it, and writing it back. Multiple threads can still interfere with each
+other, leading to incorrect results.
+
+This is where `synchronized` is different.
+
+The `synchronized` keyword provides **mutual exclusion**, meaning only one thread can execute the synchronized code at a
+time. It also ensures visibility — any changes made inside a synchronized block are visible to other threads once the
+lock is released.
+
+Example:
+
+```java
+synchronized (lock) {
+    count++;
+}
+```
+
+Here, the entire increment operation is protected. No two threads can execute this block simultaneously, so the result
+is always correct.
+
+In short:
+
+* `volatile` is about **visibility**
+* `synchronized` is about **visibility + mutual exclusion + atomicity**
+
+You use `volatile` for simple state flags (like `running`, `shutdown`, or configuration reload signals).
+You use `synchronized` when multiple threads are **modifying shared data** and correctness matters.
 
 ---
 
@@ -2970,7 +3066,8 @@ Use cases:
 **Is volatile enough for counters?**
 
 ✅ **Answer:**
-No. `count++` is a read–modify–write operation.
+No. Counters involve multiple steps (read, modify, write). `volatile` only guarantees visibility, not atomicity. For
+counters, use `synchronized` or atomic classes like `AtomicInteger`.
 
 ---
 
@@ -2978,27 +3075,123 @@ No. `count++` is a read–modify–write operation.
 
 #### 📘 Answer
 
-These are **inter-thread communication mechanisms** tied to object monitors.
+In Java, `wait()`, `notify()`, and `notifyAll()` are methods used for **coordination between threads**. They allow
+threads to **communicate with each other** when working on shared data, instead of continuously checking conditions in a
+loop.
 
-Key rules:
+These methods are closely tied to **object-level locks**, not threads themselves. Every object in Java has an associated
+**monitor (lock)**, and these methods work on that monitor.
 
-* Must be called inside synchronized context
-* `wait()` releases the lock
-* `notify()` wakes one thread
-* `notifyAll()` wakes all waiting threads
+#### → Why do we need them?
 
-Common usage:
+Consider a situation where:
 
-* Producer–Consumer pattern
+* One thread produces data
+* Another thread consumes data
+
+If the consumer runs before data is available, it should **wait**.
+Once the producer finishes its work, it should **notify** the consumer.
+
+Without `wait()` / `notify()`, the consumer would have to keep checking in a loop, wasting CPU time (this is called
+*busy waiting*).
+
+#### 1. `wait()`
+
+When a thread calls `wait()` on an object:
+
+* The thread **releases the lock** on that object
+* The thread enters a **waiting state**
+* It stays there until another thread notifies it
+
+Example:
+
+```java
+synchronized (lock) {
+    while (!condition) {
+        lock.wait();
+    }
+    // continue execution
+}
+```
+
+Here, the thread:
+
+* Acquires the lock
+* Checks a condition
+* Calls `wait()` if the condition is not met
+* Releases the lock so other threads can proceed
+
+#### 2. `notify()`
+
+When a thread calls `notify()` on an object:
+
+* It wakes up **one** thread waiting on that object’s monitor
+* The awakened thread does **not run immediately**
+* It first waits to re-acquire the lock
+
+Example:
+
+```java
+synchronized (lock) {
+    condition = true;
+    lock.notify();
+}
+```
+
+This is typically used when one waiting thread is sufficient to proceed.
+
+#### 3. `notifyAll()`
+
+`notifyAll()` wakes up **all threads** waiting on the object’s monitor.
+
+Each awakened thread:
+
+* Competes to acquire the lock
+* Re-checks the condition
+* Proceeds only if the condition is satisfied
+
+Example:
+
+```java
+synchronized (lock) {
+    condition = true;
+    lock.notifyAll();
+}
+```
+
+This is safer when:
+
+* Multiple threads may be waiting
+* You’re not sure which thread should proceed
+
+#### → Important rules to remember
+
+1. **These methods must be called inside a synchronized block or method**
+   Otherwise, Java throws `IllegalMonitorStateException`.
+
+2. **Always use `wait()` inside a loop, not an `if` condition**
+   Threads can wake up without a notification (called *spurious wakeups*).
+
+3. **`wait()` releases the lock, `sleep()` does not**
+   This is a very common source of confusion.
+
+#### → Typical use case: Producer–Consumer
+
+* Producer produces data → calls `notify()` / `notifyAll()`
+* Consumer waits for data → calls `wait()`
+* Both synchronize on the same lock object
+
+This pattern allows threads to work efficiently without wasting CPU.
 
 ---
 
 #### ⚠️ Tricky Follow-up
 
-**Why is wait not in Thread class?**
+**Why is `wait()` not in the `Thread` class?**
 
 ✅ **Answer:**
-Because waiting happens on **shared resources**, not threads.
+Because `wait()` is about **waiting for a condition on a shared object**, not about controlling a thread directly.
+Threads coordinate by waiting on shared resources, so `wait()` belongs to `Object`, not `Thread`.
 
 ---
 
@@ -3006,27 +3199,86 @@ Because waiting happens on **shared resources**, not threads.
 
 #### 📘 Answer
 
-| sleep                | wait            |
-|----------------------|-----------------|
-| Thread method        | Object method   |
-| Doesn’t release lock | Releases lock   |
-| Time-based           | Condition-based |
+At first glance, `sleep()` and `wait()` may look similar because both cause a thread to pause execution. However, they
+are used for **very different purposes**, and confusing them is a common source of bugs in multithreaded Java programs.
 
-`sleep()` is about pausing execution
-`wait()` is about coordination
+The most important difference is **why** a thread is paused and **what happens to the lock** while it is paused.
+
+#### 1. `sleep()`
+
+`sleep()` is a method of the `Thread` class. It is used when a thread simply wants to **pause execution for a fixed
+amount of time**, regardless of what other threads are doing.
+
+Key points about `sleep()`:
+
+* It pauses the current thread for a specified duration
+* It **does not release any locks** the thread is holding
+* After the sleep time expires, the thread becomes runnable again
+
+Example:
+
+```java
+synchronized (lock) {
+    Thread.sleep(1000);
+    // lock is still held during sleep
+}
+```
+
+In this example, even though the thread is sleeping, it continues to hold the lock. Other threads that need the same
+lock will remain blocked during this time.
+
+Typical use cases for `sleep()`:
+
+* Simulating delays
+* Rate-limiting operations
+* Giving other threads a chance to run (rarely recommended)
+
+#### 2. `wait()`
+
+`wait()` is a method of the `Object` class. It is used for **thread coordination**, not for fixed delays.
+
+When a thread calls `wait()` on an object:
+
+* It **releases the lock** on that object
+* It enters a waiting state
+* It stays there until another thread calls `notify()` or `notifyAll()` on the same object
+
+Example:
+
+```java
+synchronized (lock) {
+    while (!condition) {
+        lock.wait();
+    }
+    // lock is re-acquired before continuing
+}
+```
+
+Here, the thread:
+
+* Releases the lock so other threads can update the condition
+* Waits efficiently without wasting CPU
+* Resumes only when it is notified and the condition is satisfied
+
+Typical use cases for `wait()`:
+
+* Producer–consumer coordination
+* Waiting for shared state changes
+* Condition-based synchronization
 
 ---
 
 #### ⚠️ Tricky Follow-up
 
-**Can wait timeout?**
+**Can `wait()` timeout?**
 
 ✅ **Answer:**
-Yes — timed waits are supported.
+Yes. `wait(long timeout)` allows a thread to wait either until it is notified or until the specified time elapses,
+whichever happens first.
 
 ---
 
-## 🔴 HARD / SENIOR-LEVEL QUESTIONS
+## 🔴 HARD QUESTIONS
 
 ---
 
@@ -3034,21 +3286,83 @@ Yes — timed waits are supported.
 
 #### 📘 Answer
 
-Deadlock occurs when threads wait indefinitely for each other.
+A **deadlock** is a situation in a multithreaded program where two or more threads are **permanently blocked**, each
+waiting for a resource that is held by another thread. As a result, none of the threads can make progress, and the
+program appears to be stuck.
 
-Necessary conditions:
+Deadlocks are particularly dangerous because:
 
-1. Mutual exclusion
-2. Hold and wait
-3. No preemption
-4. Circular wait
+* They do not throw exceptions
+* They do not crash the application
+* The system simply stops moving forward
 
-Classic scenario:
+#### → A simple example
 
+Consider two threads and two locks:
+
+```java
+Object lockA = new Object();
+Object lockB = new Object();
 ```
-Thread A → Lock X → waits for Lock Y
-Thread B → Lock Y → waits for Lock X
+
+Thread 1:
+
+```java
+synchronized (lockA) {
+    synchronized (lockB) {
+        // work
+    }
+}
 ```
+
+Thread 2:
+
+```java
+synchronized (lockB) {
+    synchronized (lockA) {
+        // work
+    }
+}
+```
+
+If:
+
+* Thread 1 acquires `lockA`
+* Thread 2 acquires `lockB`
+
+Then:
+
+* Thread 1 waits for `lockB`
+* Thread 2 waits for `lockA`
+
+Neither thread can proceed, and the program enters a deadlock.
+
+#### → Why deadlocks happen
+
+A deadlock occurs only when **all four of the following conditions are present at the same time**:
+
+1. **Mutual exclusion**
+   A resource (like a lock) can be held by only one thread at a time.
+
+2. **Hold and wait**
+   A thread holds one lock while waiting to acquire another.
+
+3. **No preemption**
+   A lock cannot be forcibly taken away from a thread.
+
+4. **Circular wait**
+   A cycle exists where threads wait on each other’s locks.
+
+If even one of these conditions is prevented, a deadlock cannot occur.
+
+#### → Common real-world causes of deadlocks
+
+* Acquiring multiple locks in different orders
+* Nested synchronized blocks
+* Mixing synchronized code with external libraries
+* Locking on shared or public objects (like `this` or class objects)
+
+Deadlocks often appear **only under load**, which makes them hard to reproduce during development.
 
 ---
 
@@ -3058,10 +3372,18 @@ Thread B → Lock Y → waits for Lock X
 
 ✅ **Answer:**
 
-* Lock ordering
-* Timeouts
-* Avoid nested locks
-* Prefer higher-level concurrency utilities
+While Java cannot automatically prevent all deadlocks, developers can reduce the risk by following good practices:
+
+* **Lock ordering**
+  Always acquire multiple locks in the same order across the application.
+
+* **Minimize lock scope**
+  Keep synchronized sections small and focused.
+
+* **Avoid nested locks when possible**
+
+* **Use higher-level concurrency utilities**
+  Classes from `java.util.concurrent` often manage locking internally and more safely.
 
 ---
 
@@ -3069,11 +3391,82 @@ Thread B → Lock Y → waits for Lock X
 
 #### 📘 Answer
 
-* **Deadlock** → no progress, threads blocked
-* **Livelock** → threads active but no progress
-* **Starvation** → thread never gets CPU
+Deadlock, livelock, and starvation are **three different concurrency problems** that can occur in multithreaded systems.
+While all of them result in threads not making progress, the **reason why progress stops** is different in each case.
 
-Livelocks are especially tricky because the system appears “alive”.
+Understanding the difference helps you **diagnose real production issues**.
+
+#### 1. Deadlock
+
+A **deadlock** occurs when two or more threads are **blocked forever**, each waiting for a resource held by another
+thread.
+
+Key characteristics of deadlock:
+
+* Threads are completely blocked
+* No thread can move forward
+* CPU usage is usually low
+* The program appears “hung”
+
+Example (conceptually):
+
+* Thread A holds Lock 1 and waits for Lock 2
+* Thread B holds Lock 2 and waits for Lock 1
+
+Since neither thread can release its lock, the system is stuck permanently.
+
+#### 2. Livelock
+
+A **livelock** occurs when threads are **not blocked**, but they are still **unable to make progress** because they keep
+reacting to each other.
+
+Key characteristics of livelock:
+
+* Threads are active and running
+* CPU usage is often high
+* Threads keep changing state, but no useful work is done
+
+A simple analogy:
+
+> Two people trying to pass each other in a hallway, both stepping aside repeatedly in the same direction.
+
+In code, livelock often happens when threads:
+
+* Retry an operation repeatedly
+* Detect conflicts
+* Back off and retry again, indefinitely
+
+The system is “alive”, but no progress is made.
+
+#### 3. Starvation
+
+**Starvation** occurs when a thread **never gets the resources it needs** to execute, even though other threads continue
+to run normally.
+
+Key characteristics of starvation:
+
+* One or more threads are constantly delayed
+* Other threads keep getting preference
+* The system as a whole continues working
+
+Common causes of starvation:
+
+* Thread priorities used incorrectly
+* Long-running synchronized blocks
+* Unfair locks
+
+Example:
+
+* A low-priority thread never gets CPU time
+* A thread waits indefinitely because higher-priority threads keep acquiring the lock
+
+#### → Comparing the three in simple terms
+
+* **Deadlock**: Threads are blocked and waiting forever
+* **Livelock**: Threads are running but not making progress
+* **Starvation**: A thread is ready to run but never gets a chance
+
+All three are concurrency bugs, but their **symptoms and solutions differ**.
 
 ---
 
@@ -3082,27 +3475,86 @@ Livelocks are especially tricky because the system appears “alive”.
 **Which is hardest to detect?**
 
 ✅ **Answer:**
-Livelock.
+Livelock is often the hardest to detect because the system appears active and responsive, with threads running and CPU
+usage increasing, even though no real progress is being made.
 
 ---
 
-### Q12. What is ExecutorService?
+### Q12. What is `ExecutorService`?
 
 #### 📘 Answer
 
-ExecutorService abstracts:
+`ExecutorService` is a high-level concurrency framework in Java that **manages thread creation, execution, and lifecycle
+for you**. Instead of manually creating and starting threads, you submit tasks to an `ExecutorService`, and it decides 
+**when, where, and by which thread** those tasks should run.
 
-* Thread creation
-* Scheduling
-* Lifecycle management
+The key idea behind `ExecutorService` is **separation of concerns**:
 
-Benefits:
+* Your code defines *what work needs to be done*
+* The executor decides *how that work is executed*
 
-* Thread reuse
-* Bounded resources
-* Cleaner APIs
+#### → Why was `ExecutorService` introduced?
 
-This is **the preferred way** to manage threads in modern Java.
+Creating threads manually using `new Thread()` may look simple, but it quickly leads to problems in real applications:
+
+* Threads are expensive to create
+* Too many threads can exhaust CPU and memory
+* Threads are hard to manage and reuse
+* No built-in way to limit or control concurrency
+
+`ExecutorService` solves these problems by:
+
+* Reusing a fixed number of threads
+* Limiting how many tasks run concurrently
+* Providing a clean API for task submission and shutdown
+
+#### → Basic usage example
+
+```java
+ExecutorService executor = Executors.newFixedThreadPool(2);
+
+executor.submit(() -> {
+    System.out.println("Task executed by thread pool");
+});
+
+executor.shutdown();
+```
+
+In this example:
+
+* You submit a task, not a thread
+* The executor picks an available thread from the pool
+* Threads are reused instead of created repeatedly
+* You explicitly shut down the executor when done
+
+#### → What problems does `ExecutorService` solve?
+
+Using an executor helps you avoid:
+
+* Unbounded thread creation
+* Manual thread lifecycle management
+* Resource exhaustion under load
+
+It also makes your code:
+
+* Easier to reason about
+* More scalable
+* More production-ready
+
+This is why **modern Java applications almost never create threads directly**.
+
+#### → Tasks vs Threads (important distinction)
+
+With `ExecutorService`:
+
+* You submit **tasks** (`Runnable` or `Callable`)
+* You do **not** control the actual threads
+
+This allows Java to:
+
+* Queue tasks
+* Execute them when resources are available
+* Return results via `Future` (for `Callable`)
 
 ---
 
@@ -3111,7 +3563,9 @@ This is **the preferred way** to manage threads in modern Java.
 **Why not create threads manually?**
 
 ✅ **Answer:**
-Threads are expensive and unbounded creation leads to resource exhaustion.
+Because creating threads manually gives you no control over how many threads exist, makes thread reuse difficult, and
+can easily lead to resource exhaustion. `ExecutorService` provides controlled concurrency, thread reuse, and proper
+lifecycle management, which is essential for real-world applications.
 
 ---
 
@@ -3119,12 +3573,119 @@ Threads are expensive and unbounded creation leads to resource exhaustion.
 
 #### 📘 Answer
 
-* FixedThreadPool → predictable load
-* CachedThreadPool → short-lived tasks (dangerous)
-* SingleThreadExecutor → sequential execution
-* ScheduledThreadPool → delayed/periodic tasks
+In Java, a **thread pool** is a group of reusable threads managed by an `ExecutorService`. Instead of creating a new
+thread for every task, tasks are submitted to the pool and executed by existing threads. This improves performance and
+prevents uncontrolled thread creation.
 
-Choosing wrong pool type is a **production failure cause**.
+Java provides several commonly used thread pool types through the `Executors` utility class. Each type is designed for a
+**different kind of workload**, and choosing the wrong one can cause serious performance issues.
+
+#### 1. Fixed Thread Pool
+
+A **fixed thread pool** has a fixed number of threads that are created upfront and reused.
+
+```java
+ExecutorService executor = Executors.newFixedThreadPool(4);
+```
+
+How it behaves:
+
+* At most `N` threads run at the same time
+* Additional tasks are queued until a thread becomes free
+* Threads are reused, not recreated
+
+Best use cases:
+
+* Predictable workloads
+* CPU-bound or steady request rates
+* When you want strict control over concurrency
+
+This is one of the **safest and most commonly used** thread pools.
+
+#### 2. Cached Thread Pool
+
+A **cached thread pool** creates new threads as needed and reuses idle ones when available.
+
+```java
+ExecutorService executor = Executors.newCachedThreadPool();
+```
+
+How it behaves:
+
+* No fixed upper limit on threads
+* Threads are created aggressively under load
+* Idle threads are removed after some time
+
+Why it’s dangerous:
+
+* Under high load, it can create **too many threads**
+* Can exhaust CPU and memory
+* Often causes production outages if misused
+
+Best use cases:
+
+* Very short-lived tasks
+* Low and controlled traffic
+* Rarely recommended for backend services
+
+#### 3. Single Thread Executor
+
+A **single-thread executor** uses exactly one worker thread.
+
+```java
+ExecutorService executor = Executors.newSingleThreadExecutor();
+```
+
+How it behaves:
+
+* Tasks are executed sequentially
+* Order of execution is guaranteed
+* If the thread dies, it is replaced automatically
+
+Best use cases:
+
+* Tasks that must run in order
+* Background jobs
+* Replacing manual single-thread designs
+
+#### 4. Scheduled Thread Pool
+
+A **scheduled thread pool** is used for tasks that need to run:
+
+* After a delay
+* Periodically
+
+```java
+ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
+```
+
+How it behaves:
+
+* Supports delayed and recurring execution
+* Uses a pool of reusable threads
+* Safer and more flexible than `Timer`
+
+Best use cases:
+
+* Periodic cleanup jobs
+* Heartbeat checks
+* Delayed retries
+
+#### → Choosing the right thread pool
+
+Choosing a thread pool depends on:
+
+* Nature of the task (CPU-bound vs I/O-bound)
+* Expected load
+* Ordering requirements
+* Failure tolerance
+
+A common rule of thumb:
+
+* Use **fixed thread pools** by default
+* Be extremely cautious with **cached thread pools**
+* Use **single-thread executors** for ordered execution
+* Use **scheduled pools** for time-based tasks
 
 ---
 
@@ -3133,7 +3694,8 @@ Choosing wrong pool type is a **production failure cause**.
 **Why is CachedThreadPool dangerous?**
 
 ✅ **Answer:**
-It can create unlimited threads under load.
+Because it can create an unbounded number of threads under heavy load. This can overwhelm the CPU, exhaust memory, and
+cause the entire application to become unstable or crash.
 
 ---
 
@@ -3141,20 +3703,74 @@ It can create unlimited threads under load.
 
 #### 📘 Answer
 
-Designed for:
+The **ForkJoin framework** is a concurrency framework in Java designed to efficiently execute **large tasks that can be
+broken down into smaller independent subtasks**. It follows the **divide-and-conquer** approach: a big task is split (
+“forked”) into smaller tasks, those tasks are processed (possibly in parallel), and their results are combined (
+“joined”).
 
-* Divide-and-conquer algorithms
+The framework is built to make **better use of multicore CPUs** without requiring developers to manually manage
+threads.
+
+#### → Why does ForkJoin exist?
+
+In many problems, especially computational ones, a task can be divided into smaller pieces that can run independently.
+Examples include:
+
+* Processing large arrays
+* Recursive algorithms
+* Data aggregation tasks
+
+Managing threads manually for such problems is complex and error-prone. ForkJoin provides a structured way to:
+
+* Split tasks recursively
+* Balance work across available CPU cores
+* Minimize idle threads
+
+#### → How ForkJoin works (at a high level)
+
+ForkJoin uses a special kind of thread pool called a **ForkJoinPool**.
+
+Key idea:
+
+* Each worker thread maintains its own **work queue**
+* If a thread finishes its work early, it **steals tasks** from other threads’ queues
+
+This approach is called **work-stealing**, and it helps keep all CPU cores busy.
+
+You don’t assign tasks to specific threads — the framework handles this automatically.
+
+#### → Simple example idea (conceptual)
+
+Imagine summing a large array:
+
+* Split the array into two halves
+* Process each half in parallel
+* Combine the results
+
+ForkJoin handles the splitting and execution efficiently without creating unnecessary threads.
+
+#### → Where ForkJoin is commonly used
+
+* Parallel algorithms
 * Recursive tasks
+* Internals of Java parallel streams
+* CPU-intensive workloads
 
-Uses:
+This is why `parallelStream()` internally uses the ForkJoin framework.
 
-* Work-stealing
-* Small tasks distributed across CPUs
+#### → Important limitation to remember
 
-Common in:
+ForkJoin is **not suitable for blocking operations** such as:
 
-* Parallel streams
-* Computational workloads
+* Waiting for I/O
+* Calling external services
+* Sleeping threads
+
+Blocking inside ForkJoin tasks can:
+
+* Starve worker threads
+* Reduce parallelism
+* Defeat the purpose of work-stealing
 
 ---
 
@@ -3163,7 +3779,8 @@ Common in:
 **Is ForkJoin suitable for blocking tasks?**
 
 ✅ **Answer:**
-No — blocking breaks work-stealing efficiency.
+No. ForkJoin is designed for CPU-bound, non-blocking tasks. Blocking operations reduce the effectiveness of
+work-stealing and can cause thread starvation.
 
 ---
 
@@ -3171,21 +3788,72 @@ No — blocking breaks work-stealing efficiency.
 
 #### 📘 Answer
 
-`CompletableFuture` enables:
+`CompletableFuture` is a Java class that represents the result of an **asynchronous computation**. It allows you to run
+tasks in the background and **define what should happen when those tasks complete**, without blocking the current
+thread.
 
-* Asynchronous programming
-* Non-blocking composition
-* Better error handling
+Unlike traditional concurrency approaches that rely heavily on blocking calls, `CompletableFuture` encourages a *
+*non-blocking, callback-style** way of writing asynchronous code.
 
-Supports chaining:
+#### → Why was `CompletableFuture` introduced?
+
+Before `CompletableFuture`, Java provided `Future`, but it had important limitations:
+
+* You could only block using `get()` to retrieve results
+* Chaining multiple asynchronous steps was difficult
+* Error handling was awkward
+
+`CompletableFuture` was introduced to:
+
+* Make asynchronous programming more expressive
+* Allow composition of multiple async steps
+* Reduce blocking in concurrent applications
+
+#### → Basic example
 
 ```java
-thenApply → transform
-thenCompose → flatten
-thenAccept → consume
-
-CompletableFuture.supplyAsync().thenApply().thenAccept();
+CompletableFuture.supplyAsync(() -> {
+    return "Hello";
+}).thenApply(result -> {
+    return result + " World";
+}).thenAccept(finalResult -> {
+    System.out.println(finalResult);
+});
 ```
+
+In this example:
+
+* The computation runs asynchronously
+* Each step is triggered when the previous one completes
+* No thread is blocked waiting for results
+
+#### → Key ideas behind `CompletableFuture`
+
+* **Non-blocking execution**
+  Tasks run asynchronously, and actions are triggered when results are available.
+
+* **Chaining and composition**
+  You can define a sequence of dependent operations in a readable way.
+
+* **Explicit error handling**
+  Failures can be handled using methods like `exceptionally()` or `handle()`.
+
+#### → Commonly used methods (conceptually)
+
+* `thenApply()` – transforms the result
+* `thenCompose()` – chains another asynchronous task
+* `thenAccept()` – consumes the result
+* `exceptionally()` – handles errors
+
+These methods allow you to express **workflow logic**, not just background execution.
+
+#### → When to use `CompletableFuture`
+
+* Calling multiple independent services asynchronously
+  * Performing background computations
+* Avoiding blocking threads in high-concurrency systems
+
+It is especially useful in backend applications where **thread blocking is expensive**.
 
 ---
 
@@ -3194,7 +3862,8 @@ CompletableFuture.supplyAsync().thenApply().thenAccept();
 **Difference between `get()` and `join()`?**
 
 ✅ **Answer:**
-`get()` throws checked exceptions; `join()` throws unchecked.
+Both methods wait for the result, but `get()` throws checked exceptions, while `join()` throws unchecked exceptions.
+This makes `join()` more convenient in functional-style code.
 
 ---
 
@@ -3433,7 +4102,7 @@ No — it complicates APIs.
 
 ---
 
-## 🔴 HARD / SENIOR-LEVEL QUESTIONS
+## 🔴 HARD QUESTIONS
 
 ---
 
@@ -3822,7 +4491,7 @@ Externalizable → developer-controlled
 
 ---
 
-## 🔴 HARD / SENIOR-LEVEL QUESTIONS
+## 🔴 HARD QUESTIONS
 
 ---
 
@@ -4229,7 +4898,7 @@ No — final classes/methods cannot be overridden.
 
 ---
 
-## 🔴 HARD / SENIOR-LEVEL QUESTIONS
+## 🔴 HARD QUESTIONS
 
 ---
 
@@ -4653,7 +5322,7 @@ Shallow copies references; deep copies entire object graph.
 
 ---
 
-## 🔴 HARD / SENIOR-LEVEL QUESTIONS
+## 🔴 HARD QUESTIONS
 
 ---
 
@@ -5048,7 +5717,7 @@ Reduces thread and context-switch overhead.
 
 ---
 
-## 🔴 HARD / SENIOR-LEVEL QUESTIONS
+## 🔴 HARD QUESTIONS
 
 ---
 
@@ -5435,7 +6104,7 @@ They leak internal structure and implementation details.
 
 ---
 
-## 🔴 HARD / SENIOR-LEVEL QUESTIONS
+## 🔴 HARD QUESTIONS
 
 ---
 
@@ -5783,7 +6452,7 @@ No — complexity must justify gains.
 
 ---
 
-## 🔴 HARD / SENIOR-LEVEL QUESTIONS
+## 🔴 HARD QUESTIONS
 
 ---
 
